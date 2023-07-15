@@ -16,7 +16,7 @@ export default function Products() {
       <main>
         <h1>Products</h1>
         <section className="grid grid-cols-4 gap-3">
-          <FetchResolver<Products> {...productsQuery}>
+          <FetchResolver {...productsQuery}>
             {(products) =>
               products.map((product) => (
                 <Product key={product.id} {...product} />

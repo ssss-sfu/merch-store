@@ -3,9 +3,7 @@ import Link from "next/link";
 import DashboardHeader from "~/components/dashboard/DashboardHeader";
 import FetchResolver from "~/components/ui/FetchResolver";
 import Layout from "~/components/ui/Layout";
-import { type RouterOutputs, api } from "~/utils/api";
-
-type Products = RouterOutputs["productManagement"]["getAll"];
+import { api } from "~/utils/api";
 
 export { getServerSideProps } from "~/utils/serverSideAuth";
 
@@ -25,7 +23,7 @@ export default function Orders() {
           </div>
         </div>
         <section className="grid grid-cols-4 gap-3">
-          <FetchResolver<Products> {...productsQuery}>
+          <FetchResolver {...productsQuery}>
             {(products) => {
               return products.map((product) => (
                 <Link

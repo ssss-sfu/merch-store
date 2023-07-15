@@ -58,7 +58,7 @@ export default function Orders() {
         </div>
         <section>
           <div className="py-10">
-            <FetchResolver<Orders> {...orderResponse}>
+            <FetchResolver {...orderResponse}>
               {(data) => {
                 return (
                   // eslint-disable-next-line @typescript-eslint/no-explicit-any

@@ -29,8 +29,6 @@ import {
 } from "~/components/ui/Select";
 import { type ProcessingState } from "@prisma/client";
 
-type Order = RouterOutputs["order"]["get"];
-
 export { getServerSideProps } from "~/utils/serverSideAuth";
 
 export default function OrderId() {
@@ -65,7 +63,7 @@ export default function OrderId() {
   const updateProcessingState = api.order.updateProcessingState.useMutation({
     onSuccess(data) {
       queryUtils.order.get.setData(data.id, data);
-    }
+    },
   });
 
   return (
@@ -74,7 +72,7 @@ export default function OrderId() {
       <main>
         <article>
           <h2>Order Information</h2>
-          <FetchResolver<Order> {...orderQuery}>
+          <FetchResolver {...orderQuery}>
             {(order) => {
               return order ? (
                 <div>
