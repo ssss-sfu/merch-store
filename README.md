@@ -48,3 +48,11 @@ Authentication is handled by a library called [NextAuth](https://next-auth.js.or
 ## Frontend Backend communication
 
 Refer to the create t3 [docs](https://create.t3.gg/en/usage/trpc).
+
+## Styling
+
+Styling is handle by [shadcn/ui](https://ui.shadcn.com/docs) which is different from the traditional component library because components aren't 'installed'
+into the codebase. Instead it provides the code for components using [tailwindcss](https://tailwindcss.com/) and [headlessui](https://headlessui.com/).
+The color scheme can be configured in the `global.css` file. More info can be found in the shadcn/ui [docs](https://ui.shadcn.com/docs/theming).
+
+Note: the shadcn/ui cli isn't setup yet.
