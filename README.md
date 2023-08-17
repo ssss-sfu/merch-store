@@ -16,3 +16,35 @@ npm run db-seed
 ```
 
 Open another terminal window and run ``npm run dev` to start the dev server.
+
+## Cart Implementation
+
+The cart is currently stored in memory using a state library called [jotai](https://jotai.org/). Jotai has
+some [documenation](https://jotai.org/docs/guides/persistence) on how to make it persistent in local storage.
+
+The implementation for the store is done all in the frontend in the file `cartStore.ts`.
+
+## Admin Dashboard
+
+### Changing the admin credentials
+
+There is one admin user that will be added when the database is seeded initially. To change the credentails, update the
+`.env` file by changing `ADMIN_USERNAME` and `ADMIN_PASSWORD` and run `npm run db-seed`.
+
+Note: This wipe the database.
+
+If you want to update the credentails without resetting the database, you would have to modify the username and password directly.
+One way to do that is to use prisma studio's UI.
+
+Open a new terminal and run npx prisma studio. Modify the username.
+
+Modifying the password is a bit more tricky since you would have to generate the hashed password using a site like [bcrypt generator](https://bcrypt-generator.com/) and
+update the passowrd in the db with the hashed password.
+
+### Adding additional logic for authorization/authentication
+
+Authentication is handled by a library called [NextAuth](https://next-auth.js.org/). The login logic can be found in the file `auth.ts`.
+
+## Frontend Backend communication
+
+Refer to the create t3 [docs](https://create.t3.gg/en/usage/trpc).
