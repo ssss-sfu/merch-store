@@ -31,24 +31,25 @@ export default function Products() {
 }
 
 function Product({ id, name, price, imageLink }: Products[number]) {
-  const priceLabel = `${price}`.split(".").length > 1 ? price : `${price}.00`;
+  const priceLabel: string =
+    `${price}`.split(".").length > 1 ? `${price}` : `${price}.00`;
 
   return (
     <Link
       href={`./${id}`}
       key={id}
-      className="flex aspect-square flex-col items-center gap-3	text-center"
+      className="flex aspect-square flex-col items-center gap-3	text-center "
     >
       <Image
         priority={true}
         width={208}
         height={208}
-        className="mb-3 h-full w-full object-cover"
+        className="mb-3 h-full w-full overflow-hidden rounded-xl object-cover	"
         src={imageLink}
         alt={name}
       />
       <h3 className="text-xs">{name}</h3>
-      <span className="text-base">${priceLabel} CAD</span>
+      <span className="text-base">${priceLabel}</span>
     </Link>
   );
 }

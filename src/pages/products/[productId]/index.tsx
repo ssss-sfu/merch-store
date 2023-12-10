@@ -47,6 +47,11 @@ export default function Product() {
     return <div>Something went wrong</div>;
   }
 
+  const priceLabel: string =
+    `${product.price}`.split(".").length > 1
+      ? `${product.price}`
+      : `${product.price}.00`;
+
   const handleAddToCart = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
@@ -77,55 +82,27 @@ export default function Product() {
   return (
     <Layout>
       <Header />
-      <main className="flex justify-center gap-4">
+      <main className="flex flex-col justify-center gap-6 px-4 md:flex-row md:gap-14">
         <div className="w-full">
           <Image
             priority={true}
             width={500}
             height={500}
-            className="h-full w-full object-cover"
+            className="aspect-square w-full overflow-hidden rounded-3xl	object-cover	"
             src={product.imageLink}
             alt={product.name}
           />
         </div>
-        <form className="flex w-full flex-col gap-4" onSubmit={handleAddToCart}>
-          <h1>{product.name}</h1>
-          <span>$ {product.price}</span>
-          <div className="flex items-end gap-2">
-            {!!product.availableSizes.length && (
-              <div className="grid w-full gap-2">
-                <label>Size</label>
-                <Select onValueChange={handleSize} value={size}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Size" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {product.availableSizes.map(({ productSize }) => (
-                      <SelectItem key={productSize.id} value={productSize.size}>
-                        {productSize.size}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            )}
-            <div className="grid w-full gap-2">
-              <label>Quantity</label>
-              <Input
-                type="number"
-                placeholder="Quantity"
-                step={1}
-                min={1}
-                value={quantity}
-                onChange={(e) => handleQuantity(Number(e.target.value))}
-              />
-            </div>
-          </div>
-          <Button variant="outline" className="bg-black text-white">
-            Add to Cart
-          </Button>
+        <form
+          className="flex w-full flex-col gap-y-8 md:gap-y-16"
+          onSubmit={handleAddToCart}
+        >
+          <section className="md:pt-8">
+            <h1 className="text-2xl font-medium	">{product.name}</h1>
+            <span className="text-lg">${priceLabel}</span>
+          </section>
           {!!product.aboutProducts.length && (
-            <div>
+            <section>
               <h2>About this product</h2>
               <ul>
                 {product.aboutProducts.map(({ id, description }) => {
@@ -136,8 +113,53 @@ export default function Product() {
                   );
                 })}
               </ul>
-            </div>
+            </section>
           )}
+          <section className="flex flex-col gap-4">
+            <div className="flex items-end gap-2">
+              {!!product.availableSizes.length && (
+                <div className="grid w-full gap-1">
+                  <label>Size</label>
+                  <Select onValueChange={handleSize} value={size}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Size" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {product.availableSizes.map(({ productSize }) => (
+                        <SelectItem
+                          key={productSize.id}
+                          value={productSize.size}
+                        >
+                          {productSize.size}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
+              <div className="grid w-full gap-2">
+                <label>Quantity</label>
+                <Input
+                  type="number"
+                  placeholder="Quantity"
+                  step={1}
+                  min={1}
+                  value={quantity}
+                  onChange={(e) => handleQuantity(Number(e.target.value))}
+                />
+              </div>
+            </div>
+            <div className="flex flex-col gap-2">
+              <Button variant="outline" className="bg-black text-white">
+                Add to Cart*
+              </Button>
+              <p className="text-xs text-neutral-500	">
+                *By adding to your cart, you are preparing to reserve this item
+                and will pay in the future. No financial transactions occur on
+                this site. Learn more here.
+              </p>
+            </div>
+          </section>
         </form>
       </main>
     </Layout>
