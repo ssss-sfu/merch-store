@@ -19,14 +19,16 @@ const config = {
     defaultLocale: "en",
   },
   images: {
-    domains: ["drive.google.com"],
+    domains: ["drive.google.com", "lh3.googleusercontent.com"],
   },
   async redirects() {
-    return [{
-      source: "/dashboard",
-      destination: "/dashboard/orders",
-      permanent: true,
-    }];
+    return [
+      {
+        source: "/dashboard",
+        destination: "/dashboard/orders",
+        permanent: true,
+      },
+    ];
   },
 };
 
