@@ -15,7 +15,7 @@ export default function Products() {
     <Layout>
       <Header />
       <main>
-        <section className="grid grid-cols-2 gap-4 px-4 md:grid-cols-3 md:gap-12 lg:grid-cols-4 lg:gap-14">
+        <section className="grid grid-cols-2 gap-4 px-4 md:grid-cols-3 md:gap-12 lg:grid-cols-4 lg:gap-8">
           <FetchResolver {...productsQuery}>
             {(products) =>
               products.map((product) => (

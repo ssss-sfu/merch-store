@@ -16,6 +16,7 @@ import {
 import { useToast } from "~/components/ui/useToast";
 import { type RouterInputs, api } from "~/utils/api";
 import Image from "next/image";
+import { DisclaimerText } from "~/components/products/DisclaimerText";
 
 type Size = RouterInputs["order"]["add"]["products"][number]["size"];
 
@@ -153,11 +154,7 @@ export default function Product() {
               <Button variant="outline" className="bg-black text-white">
                 Add to Cart*
               </Button>
-              <p className="text-xs text-neutral-500	">
-                *By adding to your cart, you are preparing to reserve this item
-                and will pay in the future. No financial transactions occur on
-                this site. Learn more here.
-              </p>
+              <DisclaimerText />
             </div>
           </section>
         </form>
