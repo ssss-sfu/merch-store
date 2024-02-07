@@ -1,24 +1,30 @@
 import Link from "next/link";
-import { ShoppingCart } from "lucide-react";
+import { Logo } from "~/components/ui/Logo";
+import { IconCart } from "~/components/ui/icon";
 
 export default function Header() {
   return (
-    <header className="flex justify-between">
-      <h1>SSSS Merch Store</h1>
-      <div className="flex gap-2">
-        <nav>
-          <ul className="flex gap-2">
-            <li>
-              <Link href="/products">Products</Link>
-            </li>
-            <li>
-              <Link href="/products/cart">
-                <ShoppingCart />
-              </Link>
-            </li>
-          </ul>
-        </nav>
-      </div>
+    <header className="flex justify-between px-4 py-7">
+      <Link href="/products">
+        <Logo />
+      </Link>
+      <nav>
+        <ul className="flex gap-9">
+          <Link className="hidden sm:block" href="/products">
+            Shop
+          </Link>
+          <Link
+            className="hidden sm:block"
+            href="https://www.sfussss.org/"
+            target="_blank"
+          >
+            SSSS Website
+          </Link>
+          <Link href="/products/cart">
+            <IconCart />
+          </Link>
+        </ul>
+      </nav>
     </header>
   );
 }

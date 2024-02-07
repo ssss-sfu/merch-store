@@ -9,7 +9,6 @@ import {
 import Header from "~/components/products/Header";
 import { Input } from "~/components/ui/Input";
 import Layout from "~/components/ui/Layout";
-import { Trash2 } from "lucide-react";
 import { Button } from "~/components/ui/Button";
 import {
   DialogContent,
@@ -25,6 +24,7 @@ import { FieldValidation } from "~/components/ui/FieldValidation";
 import { useToast } from "~/components/ui/useToast";
 import { useState } from "react";
 import Image from "next/image";
+import { DisclaimerText } from "~/components/products/DisclaimerText";
 
 // Prevent Nextjs hydration warning
 const ClientSideDialog = dynamic(
@@ -91,15 +91,32 @@ export default function Index() {
   }
 
   const productPriceMap = new Map(products.map((p) => [p.id, p.price]));
+  const totalPrice: string = cart
+    .reduce((accumulator, currentItem) => {
+      const productId: string | undefined = currentItem.size
+        ? currentItem.id.split("-")[0]
+        : currentItem.id;
+      const quantity: number = currentItem.quantity;
+
+      const price: number | undefined = productPriceMap.get(productId);
+      let totalAddedPrice = 0;
+
+      if (price) {
+        totalAddedPrice += price * quantity;
+      }
+
+      return accumulator + totalAddedPrice;
+    }, 0)
+    .toFixed(2);
 
   return (
     <Layout>
       <Header />
-      <main>
-        <h2>Cart</h2>
-        <section className="grid grid-cols-2 gap-4">
+      <main className="px-4">
+        <h2 className="pb-8 text-3xl	font-medium">Your Cart</h2>
+        <section className="flex flex-col-reverse	gap-10 md:flex-row">
           {cart.length ? (
-            <ul>
+            <ul className="flex w-full	flex-col gap-8">
               {cart.map((item) => {
                 const productId = item.size ? item.id.split("-")[0] : item.id;
                 return (
@@ -114,18 +131,20 @@ export default function Index() {
               })}
             </ul>
           ) : (
-            <p>Cart is empty</p>
+            <p className="w-full text-xl">No items yet</p>
           )}
-          <div>
-            <h2>Checkout</h2>
+          <div className="md:max-w-[30%]">
+            <h2 className="pb-8 text-xl	font-medium">Total</h2>
+            <p className="pb-4 text-3xl">${totalPrice}</p>
             <ClientSideDialog
               open={isModalOpen}
               onOpenChange={(e) => setIsModalOpen(e)}
             >
               <DialogTrigger asChild>
-                <Button variant="outline" disabled={cart.length === 0}>
-                  Place Order
-                </Button>
+                <div className="flex flex-col gap-2">
+                  <Button disabled={cart.length === 0}>Place Order*</Button>
+                  <DisclaimerText />
+                </div>
               </DialogTrigger>
               <DialogContent>
                 <DialogTitle>Place Order</DialogTitle>
@@ -142,9 +161,15 @@ export default function Index() {
                       <Input id="email" {...register("email")} />
                     </FieldValidation>
                   </div>
-                  <Button type="submit" disabled={placeOrderMutation.isLoading}>
-                    Place Order
-                  </Button>
+                  <div className="flex flex-col gap-2">
+                    <Button
+                      type="submit"
+                      disabled={placeOrderMutation.isLoading}
+                    >
+                      Place Order*
+                    </Button>
+                    <DisclaimerText />
+                  </div>
                 </form>
               </DialogContent>
             </ClientSideDialog>
@@ -172,21 +197,20 @@ function CartItem({
   handleRemove,
 }: CartItemProps) {
   return (
-    <li className="flex items-center gap-4">
-      <div className="h-20 w-20 bg-gray-200">
-        <Image
-          priority={true}
-          width={500}
-          height={500}
-          className="h-full w-full object-cover"
-          src={imageLink}
-          alt={name}
-        />
-      </div>
+    <li className="flex items-start gap-8">
+      <Image
+        priority={true}
+        width={500}
+        height={500}
+        className="aspect-square w-[30%] max-w-[180px] overflow-hidden rounded-xl object-cover"
+        src={imageLink}
+        alt={name}
+      />
       <ul>
-        <li>Name: {name}</li>
-        {!!size && <li>Size: {size}</li>}
-        <li className="flex items-center gap-2">
+        <li>
+          <h3 className="pb-4 font-medium	">{name}</h3>
+        </li>
+        <li className="flex items-center gap-2 text-sm">
           <label>Quantity:</label>
           <Input
             type="number"
@@ -196,15 +220,21 @@ function CartItem({
             value={quantity}
           />
         </li>
+        {!!size && <li className="text-sm">Size: {size}</li>}
+        <li className="text-sm">
+          Total Price:{" "}
+          {price ? (
+            <span>${(price * quantity).toFixed(2)}</span>
+          ) : (
+            <span>This product is no longer sold</span>
+          )}
+        </li>
+        <li className="pt-2">
+          <Button variant="outline" onClick={() => handleRemove(id)}>
+            Remove
+          </Button>
+        </li>
       </ul>
-      {price ? (
-        <span>$ {price * quantity}</span>
-      ) : (
-        <span>This product is no longer sold</span>
-      )}
-      <button className="h-min" onClick={() => handleRemove(id)}>
-        <Trash2 />
-      </button>
     </li>
   );
 }
