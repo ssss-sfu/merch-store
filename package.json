@@ -44,7 +44,7 @@
     "tailwind-merge": "^1.13.0",
     "tailwindcss-animate": "^1.0.5",
     "uuid": "^9.0.1",
-    "zod": "^3.21.4"
+    "zod": "^3.22.4"
   },
   "devDependencies": {
     "@types/bcrypt": "^5.0.0",
