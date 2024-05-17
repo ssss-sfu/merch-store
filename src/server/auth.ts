@@ -56,7 +56,7 @@ export const authOptions: NextAuthOptions = {
         user: {
           id: token.sub as string,
         },
-      }
+      };
     },
   },
   adapter: PrismaAdapter(prisma),
@@ -90,7 +90,7 @@ export const authOptions: NextAuthOptions = {
 
         const authenticated = await bycrpt.compare(
           credentials.password,
-          hashedPassword
+          hashedPassword,
         );
 
         if (!authenticated) return null;

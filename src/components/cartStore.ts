@@ -22,7 +22,7 @@ export const addToCartAtom = atom(null, (get, set, update: CartItem) => {
           return { ...item, quantity: item.quantity + update.quantity };
         }
         return item;
-      })
+      }),
     );
   }
 });
@@ -44,9 +44,9 @@ export const updateCartItemQuantityAtom = atom(
           return { ...item, quantity: update.quantity };
         }
         return item;
-      })
+      }),
     );
-  }
+  },
 );
 
 export const removeFromCartAtom = atom(
@@ -55,9 +55,9 @@ export const removeFromCartAtom = atom(
     const cart = get(cartAtom);
     set(
       cartAtom,
-      cart.filter((item) => item.id !== update.id)
+      cart.filter((item) => item.id !== update.id),
     );
-  }
+  },
 );
 
 export const clearCartAtom = atom(null, (_, set) => {

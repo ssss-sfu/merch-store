@@ -31,7 +31,7 @@ const ClientSideDialog = dynamic(
   () => import("~/components/ui/Dialog").then((mod) => mod.Dialog),
   {
     ssr: false,
-  }
+  },
 );
 
 export default function Index() {
@@ -79,7 +79,7 @@ export default function Index() {
     },
   });
   const placeOrder = handleSubmit((data) =>
-    placeOrderMutation.mutate({ ...data, products: cart })
+    placeOrderMutation.mutate({ ...data, products: cart }),
   );
 
   if (isLoading) {
@@ -93,12 +93,12 @@ export default function Index() {
   const productPriceMap = new Map(products.map((p) => [p.id, p.price]));
   const totalPrice: string = cart
     .reduce((accumulator, currentItem) => {
-      const productId: string | undefined = currentItem.size
-        ? currentItem.id.split("-")[0]
+      const productId = currentItem.size
+        ? (currentItem.id.split("-")[0] as string)
         : currentItem.id;
-      const quantity: number = currentItem.quantity;
+      const quantity = currentItem.quantity;
 
-      const price: number | undefined = productPriceMap.get(productId);
+      const price = productPriceMap.get(productId);
       let totalAddedPrice = 0;
 
       if (price) {

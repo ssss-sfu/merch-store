@@ -100,7 +100,7 @@ export const productManagementRouter = createTRPCRouter({
 
           return updatedProduct;
         },
-        { isolationLevel: Prisma.TransactionIsolationLevel.RepeatableRead }
+        { isolationLevel: Prisma.TransactionIsolationLevel.RepeatableRead },
       );
 
       return updatedProduct;
