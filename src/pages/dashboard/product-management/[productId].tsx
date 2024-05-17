@@ -14,8 +14,8 @@ export default function Product() {
   const productId = router.query.productId as string | undefined;
 
   const { data: product, isLoading } = api.productManagement.get.useQuery(
-    productId as string,
-    { enabled: !!productId, refetchOnWindowFocus: false }
+    productId!,
+    { enabled: !!productId, refetchOnWindowFocus: false },
   );
 
   const { toast } = useToast();
@@ -47,7 +47,7 @@ export default function Product() {
   const submitCallback = (
     data:
       | RouterInputs["productManagement"]["add"]
-      | RouterInputs["productManagement"]["edit"]
+      | RouterInputs["productManagement"]["edit"],
   ) => {
     if ("id" in data) {
       editProduct.mutate(data);

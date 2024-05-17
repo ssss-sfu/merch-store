@@ -91,7 +91,7 @@ export const orderRouter = createTRPCRouter({
             orderedItems: {
               createMany: {
                 data: input.products.map((product) => {
-                  const productId = product.id.split("-")[0] as string;
+                  const productId = product.id.split("-")[0]!;
                   const price = productPricesMap.get(productId);
 
                   if (price !== 0 && !price) {

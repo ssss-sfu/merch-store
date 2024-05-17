@@ -1,6 +1,6 @@
 import { useAtomValue, useSetAtom } from "jotai";
 import {
-  CartItem,
+  type CartItem,
   cartAtom,
   clearCartAtom,
   removeFromCartAtom,
@@ -94,7 +94,7 @@ export default function Index() {
   const totalPrice: string = cart
     .reduce((accumulator, currentItem) => {
       const productId = currentItem.size
-        ? (currentItem.id.split("-")[0] as string)
+        ? currentItem.id.split("-")[0]!
         : currentItem.id;
       const quantity = currentItem.quantity;
 
@@ -122,7 +122,7 @@ export default function Index() {
                 return (
                   <CartItem
                     key={item.id}
-                    price={productPriceMap.get(productId as string)}
+                    price={productPriceMap.get(productId!)}
                     {...item}
                     handleRemove={handleRemove}
                     handleQuantityChange={handleQuantityChange}
