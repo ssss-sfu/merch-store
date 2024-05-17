@@ -81,7 +81,7 @@ export const orderRouter = createTRPCRouter({
         });
 
         const productPricesMap = new Map(
-          productPrices.map((p) => [p.id, p.price])
+          productPrices.map((p) => [p.id, p.price]),
         );
 
         await ctx.prisma.order.create({
@@ -119,7 +119,7 @@ export const orderRouter = createTRPCRouter({
       z.object({
         id: z.string(),
         processingState: z.enum(["processing", "processed"]),
-      })
+      }),
     )
     .mutation(async ({ ctx, input }) => {
       const order = await ctx.prisma.order.update({
@@ -140,7 +140,7 @@ export const orderRouter = createTRPCRouter({
 
       const _total = await getOrderTotal(input.id, ctx);
       const total = _total?.[0]?.total;
-      
+
       if (!total || !order) {
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",

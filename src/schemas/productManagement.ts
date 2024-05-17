@@ -12,7 +12,7 @@ export const addProductSchema = z.object({
       z.number().refine((val) => {
         const str = val.toString();
         return str.match(new RegExp("^\\d*(\\.\\d{0,2})?$"));
-      })
+      }),
     ),
   about: z
     .object({
