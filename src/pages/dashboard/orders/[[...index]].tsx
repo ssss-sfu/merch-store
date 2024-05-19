@@ -14,9 +14,9 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "~/components/ui/Table";
+} from "@/ui/table";
 import { useState } from "react";
-import { Button } from "~/components/ui/Button";
+import { Button } from "@/ui/button";
 import FetchResolver from "~/components/ui/FetchResolver";
 import { useRouter } from "next/router";
 
@@ -139,7 +139,7 @@ export function DataTable<TData, TValue>({
                       ? null
                       : flexRender(
                           header.column.columnDef.header,
-                          header.getContext()
+                          header.getContext(),
                         )}
                   </TableHead>
                 );

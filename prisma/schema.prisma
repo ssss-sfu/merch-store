@@ -2,8 +2,7 @@
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 generator client {
-  provider        = "prisma-client-js"
-  previewFeatures = ["jsonProtocol"]
+  provider = "prisma-client-js"
 }
 
 datasource db {
@@ -82,8 +81,7 @@ enum Size {
 }
 
 model ProductSize {
-  id             String          @id @default(cuid())
-  size           Size
+  size           Size            @id
   availableSizes AvailableSize[]
 
   @@map("product_sizes")
@@ -93,8 +91,8 @@ model AvailableSize {
   id            String      @id @default(cuid())
   productId     String
   product       Product     @relation(fields: [productId], references: [id])
-  productSizeId String
-  productSize   ProductSize @relation(fields: [productSizeId], references: [id])
+  productSizeId Size
+  productSize   ProductSize @relation(fields: [productSizeId], references: [size])
 
   @@index([productId])
   @@index([productSizeId])

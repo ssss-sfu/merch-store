@@ -17,7 +17,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "~/components/ui/Table";
+} from "@/ui/table";
 import DashboardHeader from "~/components/dashboard/DashboardHeader";
 import { useMemo } from "react";
 import {
@@ -26,7 +26,7 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "~/components/ui/Select";
+} from "@/ui/select";
 import { type ProcessingState } from "@prisma/client";
 
 export { getServerSideProps } from "~/utils/serverSideAuth";
@@ -158,7 +158,7 @@ function DataTable<TData, TValue>({
                       ? null
                       : flexRender(
                           header.column.columnDef.header,
-                          header.getContext()
+                          header.getContext(),
                         )}
                   </TableHead>
                 );
@@ -197,7 +197,7 @@ function DataTable<TData, TValue>({
                     ? null
                     : flexRender(
                         header.column.columnDef.footer,
-                        header.getContext()
+                        header.getContext(),
                       )}
                 </TableHead>
               ))}

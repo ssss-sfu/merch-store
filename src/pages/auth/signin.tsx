@@ -1,8 +1,8 @@
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/router";
 import { type FormEvent, useState } from "react";
-import { Button } from "~/components/ui/Button";
-import { Input } from "~/components/ui/Input";
+import { Button } from "@/ui/button";
+import { Input } from "@/ui/input";
 
 export default function SignIn() {
   const [username, setUsername] = useState("");
@@ -50,7 +50,7 @@ export default function SignIn() {
         </label>
         <Button type="submit">Sign in</Button>
         {hasError && (
-          <p className="w-64 rounded break-normal bg-red-200 p-4 text-red-500">
+          <p className="w-64 break-normal rounded bg-red-200 p-4 text-red-500">
             Invalid Credentials. Please try again.
           </p>
         )}
