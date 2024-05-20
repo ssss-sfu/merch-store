@@ -1,6 +1,6 @@
 import Link from "next/link";
-import { Logo } from "~/components/ui/Logo";
-import { IconCart } from "~/components/ui/icon";
+import { Logo } from "@/lib/components/icons/Logo";
+import { IconCart } from "@/lib/components/icons/icon-cart";
 
 export default function Header() {
   return (

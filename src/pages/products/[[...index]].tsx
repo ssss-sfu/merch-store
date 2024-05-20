@@ -1,8 +1,8 @@
 import Link from "next/link";
-import Header from "~/components/products/Header";
-import Footer from "~/components/products/Footer";
-import FetchResolver from "~/components/ui/FetchResolver";
-import Layout from "~/components/ui/Layout";
+import Header from "@/lib/products/Header";
+import Footer from "@/lib/products/Footer";
+import FetchResolver from "@/lib/components/FetchResolver";
+import Layout from "@/lib/components/Layout";
 import Image from "next/image";
 import { type RouterOutputs, api } from "~/utils/api";
 

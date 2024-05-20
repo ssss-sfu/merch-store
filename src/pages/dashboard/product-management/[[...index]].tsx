@@ -1,8 +1,8 @@
 import Image from "next/image";
 import Link from "next/link";
-import DashboardHeader from "~/components/dashboard/DashboardHeader";
-import FetchResolver from "~/components/ui/FetchResolver";
-import Layout from "~/components/ui/Layout";
+import DashboardHeader from "@/lib/dashboard/DashboardHeader";
+import FetchResolver from "@/lib/components/FetchResolver";
+import Layout from "@/lib/components/Layout";
 import { api } from "~/utils/api";
 
 export { getServerSideProps } from "~/utils/serverSideAuth";

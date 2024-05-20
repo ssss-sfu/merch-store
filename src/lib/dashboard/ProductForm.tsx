@@ -1,20 +1,14 @@
 import { Minus } from "lucide-react";
-import { Button } from "../ui/Button";
-import { FieldValidation } from "../ui/FieldValidation";
-import { Input } from "../ui/Input";
-import { Textarea } from "../ui/TextArea";
+import { Button } from "@/ui/button";
+import { FieldValidation } from "@/lib/components/FieldValidation";
+import { Input } from "@/ui/input";
+import { Textarea } from "@/ui/textarea";
 import { useRouter } from "next/router";
 import { zodResolver } from "@hookform/resolvers/zod";
-import {
-  type AddProduct,
-  type EditProduct,
-  type addProductSchema,
-  type editProductSchema,
-} from "~/schemas/productManagement";
 import { Controller, useFieldArray, useForm } from "react-hook-form";
-import { type RouterInputs, type RouterOutputs, api } from "~/utils/api";
+import { type RouterOutputs, api } from "~/utils/api";
 import { v4 as uuidv4 } from "uuid";
-import { Checkbox } from "../ui/Checkbox";
+import { Checkbox } from "@/ui/checkbox";
 import { type CheckedState } from "@radix-ui/react-checkbox";
 import {
   Select,
@@ -22,44 +16,42 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "../ui/Select";
-
+} from "@/ui/select";
+import { useEffect } from "react";
+import { formSchema, type FormSchema } from "~/schemas/productManagement";
+import { type Size } from "@prisma/client";
 
 export type FormProps = {
   initialData: RouterOutputs["productManagement"]["get"];
-  schema: typeof addProductSchema | typeof editProductSchema;
   submitCallback: (
-    data: AddProduct | EditProduct,
-    sizes: RouterInputs["productManagement"]["add"]["sizes"]
+    data: FormSchema | (FormSchema & { id: string; updatedAt: Date }),
   ) => void;
   isSubmitting: boolean;
 };
 
-export function Form({
-  initialData,
-  schema,
-  submitCallback,
-  isSubmitting,
-}: FormProps) {
+export function Form({ initialData, submitCallback, isSubmitting }: FormProps) {
   const {
     register,
     handleSubmit,
     control,
+    setValue,
     watch,
+    reset,
     formState: { errors },
-  } = useForm<AddProduct | EditProduct>({
-    values: initialData
-      ? {
-          ...initialData,
-          about: initialData.aboutProducts,
-          sizes: initialData.availableSizes,
-          archived: initialData.archived,
-        }
-      : undefined,
-    resolver: zodResolver(schema),
+  } = useForm<FormSchema>({
+    values: {
+      name: initialData?.name ?? "",
+      imageLink: initialData?.imageLink ?? "",
+      price: initialData?.price ?? 0.0,
+      sizes: {},
+      about: initialData?.aboutProducts ?? [],
+      archived: initialData?.archived ?? false,
+    },
+    resolver: zodResolver(formSchema),
   });
 
   const archived = watch("archived");
+  const sizes = watch("sizes");
 
   const { fields, append, remove } = useFieldArray({
     control,
@@ -73,40 +65,26 @@ export function Form({
 
   const router = useRouter();
 
-  const { data: allSizes, isLoading: allSizesIsLoading } =
+  const { data: availableSizes, isLoading: allSizesIsLoading } =
     api.productManagement.getAllSizes.useQuery(undefined, {
       refetchOnWindowFocus: false,
     });
 
-  const {
-    fields: sizes,
-    append: appendSizes,
-    remove: removeSizes,
-  } = useFieldArray({
-    control,
-    name: "sizes",
-    keyName: "key",
-  });
-
-  const handleChecked = (
-    checkedState: CheckedState,
-    id: string,
-    size: string,
-    index: number
-  ) => {
-    if (checkedState === "indeterminate" || index === -1) return;
-
-    if (checkedState) {
-      appendSizes({ id, size: size });
-    } else {
-      removeSizes(index);
+  useEffect(() => {
+    if (availableSizes) {
+      reset();
     }
+  }, [reset, initialData, availableSizes]);
+
+  const handleChecked = (size: Size, checkedState: CheckedState) => {
+    if (checkedState === "indeterminate") return;
+    setValue(`sizes.${size}`, checkedState);
   };
   if (allSizesIsLoading) {
     return <div>Loading...</div>;
   }
 
-  if (!allSizes) {
+  if (!availableSizes) {
     return <div>Something went wrong</div>;
   }
 
@@ -115,9 +93,7 @@ export function Form({
       className="flex w-full max-w-md flex-col gap-4"
       onSubmit={async (e) => {
         e.preventDefault();
-        await handleSubmit((data) =>
-          submitCallback(data, sizes)
-        )();
+        await handleSubmit((data) => submitCallback(data))();
       }}
     >
       <div className="flex items-center justify-between">
@@ -169,20 +145,15 @@ export function Form({
       </div>
       <h3>Sizes</h3>
       <div className="grid grid-cols-3 gap-2">
-        {allSizes.map(({ id, size }) => {
+        {availableSizes.map(({ size }) => {
           return (
-            <div key={id} className="flex items-center gap-1">
-              <label htmlFor={id}>{size}</label>
+            <div key={size} className="flex items-center gap-1">
+              <label htmlFor={size}>{size}</label>
               <Checkbox
-                checked={sizes.some((size) => size.id === id)}
-                onCheckedChange={(e) =>
-                  handleChecked(
-                    e,
-                    id,
-                    size,
-                    allSizes.findIndex((size) => size.id === id)
-                  )
-                }
+                checked={sizes[size]}
+                onCheckedChange={(e) => {
+                  handleChecked(size, e);
+                }}
               />
             </div>
           );

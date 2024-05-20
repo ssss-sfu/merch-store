@@ -1,7 +1,7 @@
 import { createColumnHelper } from "@tanstack/react-table";
 import { useRouter } from "next/router";
-import FetchResolver from "~/components/ui/FetchResolver";
-import Layout from "~/components/ui/Layout";
+import FetchResolver from "@/lib/components/FetchResolver";
+import Layout from "@/lib/components/Layout";
 import { type RouterOutputs, api } from "~/utils/api";
 import {
   type ColumnDef,
@@ -17,8 +17,8 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "~/components/ui/Table";
-import DashboardHeader from "~/components/dashboard/DashboardHeader";
+} from "@/ui/table";
+import DashboardHeader from "@/lib/dashboard/DashboardHeader";
 import { useMemo } from "react";
 import {
   Select,
@@ -26,7 +26,7 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "~/components/ui/Select";
+} from "@/ui/select";
 import { type ProcessingState } from "@prisma/client";
 
 export { getServerSideProps } from "~/utils/serverSideAuth";
@@ -158,7 +158,7 @@ function DataTable<TData, TValue>({
                       ? null
                       : flexRender(
                           header.column.columnDef.header,
-                          header.getContext()
+                          header.getContext(),
                         )}
                   </TableHead>
                 );
@@ -197,7 +197,7 @@ function DataTable<TData, TValue>({
                     ? null
                     : flexRender(
                         header.column.columnDef.footer,
-                        header.getContext()
+                        header.getContext(),
                       )}
                 </TableHead>
               ))}

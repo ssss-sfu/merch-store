@@ -10,11 +10,7 @@ export function FieldValidation({
   highlightOnly?: boolean;
 }) {
   return (
-    <div
-      className={`${
-        error?.message ? "error" : ""
-      } group w-full h-full`}
-    >
+    <div className={`${error?.message ? "error" : ""} group h-full w-full`}>
       {children}
       {!highlightOnly && error?.message && (
         <span className="text-red-500">{error.message}</span>

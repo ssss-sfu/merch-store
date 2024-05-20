@@ -26,12 +26,18 @@ export const productManagementRouter = createTRPCRouter({
         });
 
         await prisma.availableSize.createMany({
-          data: input.sizes.map(({ id }) => {
-            return {
-              productId: product.id,
-              productSizeId: id,
-            };
-          }),
+          data: (
+            Object.entries(input.sizes) as Array<
+              [keyof typeof input.sizes, boolean]
+            >
+          )
+            .filter(([_, val]) => val)
+            .map(([size]) => {
+              return {
+                productId: product.id,
+                productSizeId: size,
+              };
+            }),
         });
       });
 
@@ -90,12 +96,18 @@ export const productManagementRouter = createTRPCRouter({
           });
 
           await prisma.availableSize.createMany({
-            data: input.sizes.map(({ id }) => {
-              return {
-                productId: input.id,
-                productSizeId: id,
-              };
-            }),
+            data: (
+              Object.entries(input.sizes) as Array<
+                [keyof typeof input.sizes, boolean]
+              >
+            )
+              .filter(([_, val]) => val)
+              .map(([size]) => {
+                return {
+                  productId: product.id,
+                  productSizeId: size,
+                };
+              }),
           });
 
           return updatedProduct;
@@ -134,7 +146,6 @@ export const productManagementRouter = createTRPCRouter({
         ...product,
         availableSizes: product.availableSizes.map(({ productSize }) => {
           return {
-            id: productSize.id,
             size: productSize.size,
           };
         }),

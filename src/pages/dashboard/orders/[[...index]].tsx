@@ -1,6 +1,6 @@
 import { createColumnHelper, type ColumnDef } from "@tanstack/react-table";
-import DashboardHeader from "~/components/dashboard/DashboardHeader";
-import Layout from "~/components/ui/Layout";
+import DashboardHeader from "@/lib/dashboard/DashboardHeader";
+import Layout from "@/lib/components/Layout";
 import { type RouterOutputs, api } from "~/utils/api";
 import {
   flexRender,
@@ -14,10 +14,10 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "~/components/ui/Table";
+} from "@/ui/table";
 import { useState } from "react";
-import { Button } from "~/components/ui/Button";
-import FetchResolver from "~/components/ui/FetchResolver";
+import { Button } from "@/ui/button";
+import FetchResolver from "@/lib/components/FetchResolver";
 import { useRouter } from "next/router";
 
 export { getServerSideProps } from "~/utils/serverSideAuth";
@@ -139,7 +139,7 @@ export function DataTable<TData, TValue>({
                       ? null
                       : flexRender(
                           header.column.columnDef.header,
-                          header.getContext()
+                          header.getContext(),
                         )}
                   </TableHead>
                 );

@@ -5,30 +5,26 @@ import {
   clearCartAtom,
   removeFromCartAtom,
   updateCartItemQuantityAtom,
-} from "~/components/cartStore";
-import Header from "~/components/products/Header";
-import { Input } from "~/components/ui/Input";
-import Layout from "~/components/ui/Layout";
-import { Button } from "~/components/ui/Button";
-import {
-  DialogContent,
-  DialogTitle,
-  DialogTrigger,
-} from "~/components/ui/Dialog";
+} from "@/lib/products/cartStore";
+import Header from "@/lib/products/Header";
+import { Input } from "@/ui/input";
+import Layout from "@/lib/components/Layout";
+import { Button } from "@/ui/button";
+import { DialogContent, DialogTitle, DialogTrigger } from "@/ui/dialog";
 import dynamic from "next/dynamic";
 import { api } from "~/utils/api";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { type AddFormOrder, addFormOrderSchema } from "~/schemas/order";
-import { FieldValidation } from "~/components/ui/FieldValidation";
-import { useToast } from "~/components/ui/useToast";
+import { FieldValidation } from "@/lib/components/FieldValidation";
+import { useToast } from "@/ui/use-toast";
 import { useState } from "react";
 import Image from "next/image";
-import { DisclaimerText } from "~/components/products/DisclaimerText";
+import { DisclaimerText } from "@/lib/products/DisclaimerText";
 
 // Prevent Nextjs hydration warning
 const ClientSideDialog = dynamic(
-  () => import("~/components/ui/Dialog").then((mod) => mod.Dialog),
+  () => import("@/ui/dialog").then((mod) => mod.Dialog),
   {
     ssr: false,
   },

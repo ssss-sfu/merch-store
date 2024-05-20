@@ -1,10 +1,10 @@
 import { useRouter } from "next/router";
-import DashboardHeader from "~/components/dashboard/DashboardHeader";
-import Layout from "~/components/ui/Layout";
-import { Form } from "~/components/dashboard/ProductForm";
-import { editProductSchema } from "~/schemas/productManagement";
-import { type RouterInputs, api } from "~/utils/api";
-import { useToast } from "~/components/ui/useToast";
+import DashboardHeader from "@/lib/dashboard/DashboardHeader";
+import Layout from "@/lib/components/Layout";
+import { Form } from "@/lib/dashboard/ProductForm";
+import { api } from "~/utils/api";
+import { useToast } from "@/ui/use-toast";
+import { type FormSchema } from "~/schemas/productManagement";
 
 export { getServerSideProps } from "~/utils/serverSideAuth";
 
@@ -44,14 +44,12 @@ export default function Product() {
     return <div>Something went wrong</div>;
   }
 
-  const submitCallback = (
-    data:
-      | RouterInputs["productManagement"]["add"]
-      | RouterInputs["productManagement"]["edit"],
-  ) => {
-    if ("id" in data) {
-      editProduct.mutate(data);
-    }
+  const submitCallback = (data: FormSchema) => {
+    editProduct.mutate({
+      ...data,
+      id: product.id,
+      updatedAt: product.updatedAt,
+    });
   };
 
   return (
@@ -60,7 +58,6 @@ export default function Product() {
       <main className="flex justify-center">
         <Form
           initialData={product}
-          schema={editProductSchema}
           submitCallback={submitCallback}
           isSubmitting={editProduct.isLoading}
         />

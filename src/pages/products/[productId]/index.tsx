@@ -1,22 +1,22 @@
 import { useSetAtom } from "jotai";
 import { useRouter } from "next/router";
 import { useState } from "react";
-import { addToCartAtom } from "~/components/cartStore";
-import Header from "~/components/products/Header";
-import { Button } from "~/components/ui/Button";
-import { Input } from "~/components/ui/Input";
-import Layout from "~/components/ui/Layout";
+import { addToCartAtom } from "@/lib/products/cartStore";
+import Header from "@/lib/products/Header";
+import { Button } from "@/ui/button";
+import { Input } from "@/ui/input";
+import Layout from "@/lib/components/Layout";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "~/components/ui/Select";
-import { useToast } from "~/components/ui/useToast";
+} from "@/ui/select";
+import { useToast } from "@/ui/use-toast";
 import { type RouterInputs, api } from "~/utils/api";
 import Image from "next/image";
-import { DisclaimerText } from "~/components/products/DisclaimerText";
+import { DisclaimerText } from "@/lib/products/DisclaimerText";
 
 type Size = RouterInputs["order"]["add"]["products"][number]["size"];
 
@@ -27,7 +27,7 @@ export default function Product() {
     router.query.productId as string,
     {
       enabled: !!router.query.productId,
-    }
+    },
   );
 
   const [size, setSize] = useState<Size>();
@@ -128,7 +128,7 @@ export default function Product() {
                     <SelectContent>
                       {product.availableSizes.map(({ productSize }) => (
                         <SelectItem
-                          key={productSize.id}
+                          key={productSize.size}
                           value={productSize.size}
                         >
                           {productSize.size}
