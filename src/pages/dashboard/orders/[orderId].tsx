@@ -1,7 +1,7 @@
 import { createColumnHelper } from "@tanstack/react-table";
 import { useRouter } from "next/router";
-import FetchResolver from "~/components/ui/FetchResolver";
-import Layout from "~/components/ui/Layout";
+import FetchResolver from "@/lib/components/FetchResolver";
+import Layout from "@/lib/components/Layout";
 import { type RouterOutputs, api } from "~/utils/api";
 import {
   type ColumnDef,
@@ -18,7 +18,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/ui/table";
-import DashboardHeader from "~/components/dashboard/DashboardHeader";
+import DashboardHeader from "@/lib/dashboard/DashboardHeader";
 import { useMemo } from "react";
 import {
   Select,

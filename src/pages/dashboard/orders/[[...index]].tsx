@@ -1,6 +1,6 @@
 import { createColumnHelper, type ColumnDef } from "@tanstack/react-table";
-import DashboardHeader from "~/components/dashboard/DashboardHeader";
-import Layout from "~/components/ui/Layout";
+import DashboardHeader from "@/lib/dashboard/DashboardHeader";
+import Layout from "@/lib/components/Layout";
 import { type RouterOutputs, api } from "~/utils/api";
 import {
   flexRender,
@@ -17,7 +17,7 @@ import {
 } from "@/ui/table";
 import { useState } from "react";
 import { Button } from "@/ui/button";
-import FetchResolver from "~/components/ui/FetchResolver";
+import FetchResolver from "@/lib/components/FetchResolver";
 import { useRouter } from "next/router";
 
 export { getServerSideProps } from "~/utils/serverSideAuth";

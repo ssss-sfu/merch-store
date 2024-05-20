@@ -1,7 +1,7 @@
 import { api } from "~/utils/api";
 import { type FormSchema } from "~/schemas/productManagement";
 import { useRouter } from "next/router";
-import { Form } from "~/components/dashboard/ProductForm";
+import { Form } from "@/lib/dashboard/ProductForm";
 
 export { getServerSideProps } from "~/utils/serverSideAuth";
 

@@ -1,7 +1,7 @@
 import { useRouter } from "next/router";
-import DashboardHeader from "~/components/dashboard/DashboardHeader";
-import Layout from "~/components/ui/Layout";
-import { Form } from "~/components/dashboard/ProductForm";
+import DashboardHeader from "@/lib/dashboard/DashboardHeader";
+import Layout from "@/lib/components/Layout";
+import { Form } from "@/lib/dashboard/ProductForm";
 import { api } from "~/utils/api";
 import { useToast } from "@/ui/use-toast";
 import { type FormSchema } from "~/schemas/productManagement";

@@ -1,6 +1,6 @@
 import { Minus } from "lucide-react";
 import { Button } from "@/ui/button";
-import { FieldValidation } from "../ui/FieldValidation";
+import { FieldValidation } from "@/lib/components/FieldValidation";
 import { Input } from "@/ui/input";
 import { Textarea } from "@/ui/textarea";
 import { useRouter } from "next/router";
