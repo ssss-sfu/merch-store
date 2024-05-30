@@ -37,7 +37,7 @@
     "class-variance-authority": "^0.6.1",
     "clsx": "^2.1.1",
     "jotai": "^2.6.4",
-    "lucide-react": "^0.331.0",
+    "lucide-react": "^0.381.0",
     "next": "^14.2.3",
     "next-auth": "^4.24.5",
     "react": "^18.3.1",
