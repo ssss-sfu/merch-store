@@ -34,7 +34,7 @@
     "@trpc/server": "^10.26.0",
     "@types/uuid": "^9.0.8",
     "bcrypt": "^5.1.0",
-    "class-variance-authority": "^0.6.1",
+    "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",
     "jotai": "^2.6.4",
     "lucide-react": "^0.331.0",
