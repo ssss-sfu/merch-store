@@ -1,5 +1,9 @@
 import { z } from "zod";
 import { createTRPCRouter, publicProcedure } from "../trpc";
+import {
+  transformProductPriceToView,
+  transformProductsPriceToView,
+} from "~/server/price-transformer";
 
 export const productRouter = createTRPCRouter({
   getAll: publicProcedure.query(async ({ ctx }) => {
@@ -8,7 +12,7 @@ export const productRouter = createTRPCRouter({
       where: { archived: false },
     });
 
-    return products;
+    return transformProductsPriceToView(products);
   }),
   get: publicProcedure.input(z.string()).query(async ({ ctx, input }) => {
     const product = await ctx.prisma.product.findFirst({
@@ -30,6 +34,6 @@ export const productRouter = createTRPCRouter({
       },
     });
 
-    return product;
+    return product !== null ? transformProductPriceToView(product) : null;
   }),
 });

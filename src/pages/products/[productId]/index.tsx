@@ -23,12 +23,13 @@ type Size = RouterInputs["order"]["add"]["products"][number]["size"];
 export default function Product() {
   const router = useRouter();
 
-  const { data: product, isLoading } = api.product.get.useQuery(
-    router.query.productId as string,
-    {
-      enabled: !!router.query.productId,
-    },
-  );
+  const {
+    data: product,
+    isLoading,
+    isError,
+  } = api.product.get.useQuery(router.query.productId as string, {
+    enabled: !!router.query.productId,
+  });
 
   const [size, setSize] = useState<Size>();
   const handleSize = (value: string) => setSize(value as Size);
@@ -44,8 +45,12 @@ export default function Product() {
     return <div>Loading...</div>;
   }
 
-  if (!product) {
+  if (isError) {
     return <div>Something went wrong</div>;
+  }
+
+  if (!product) {
+    return <div>Product does not exist</div>;
   }
 
   const priceLabel: string =
