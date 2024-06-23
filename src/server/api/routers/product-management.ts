@@ -7,6 +7,7 @@ import {
 import { Prisma } from "@prisma/client";
 import { TRPCError } from "@trpc/server";
 import {
+  transformPriceToView,
   transformProductPriceToView,
   transformProductsPriceToView,
 } from "~/server/price-transformer";
@@ -70,7 +71,7 @@ export const productManagementRouter = createTRPCRouter({
             },
             data: {
               name: input.name,
-              price: input.price * 100,
+              price: transformPriceToView(input.price),
               imageLink: input.imageLink,
               archived: input.archived,
             },
