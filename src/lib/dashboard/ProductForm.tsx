@@ -30,6 +30,11 @@ export type FormProps = {
 };
 
 export function Form({ initialData, submitCallback, isSubmitting }: FormProps) {
+  const { data: availableSizes, isLoading: allSizesIsLoading } =
+    api.productManagement.getAllSizes.useQuery(undefined, {
+      refetchOnWindowFocus: false,
+    });
+
   const {
     register,
     handleSubmit,
@@ -43,7 +48,7 @@ export function Form({ initialData, submitCallback, isSubmitting }: FormProps) {
       name: initialData?.name ?? "",
       imageLink: initialData?.imageLink ?? "",
       price: initialData?.price ?? 0.0,
-      sizes: {},
+      sizes: convertSizesToObj(initialData?.availableSizes, availableSizes),
       about: initialData?.aboutProducts ?? [],
       archived: initialData?.archived ?? false,
     },
@@ -64,11 +69,6 @@ export function Form({ initialData, submitCallback, isSubmitting }: FormProps) {
   };
 
   const router = useRouter();
-
-  const { data: availableSizes, isLoading: allSizesIsLoading } =
-    api.productManagement.getAllSizes.useQuery(undefined, {
-      refetchOnWindowFocus: false,
-    });
 
   useEffect(() => {
     if (availableSizes) {
@@ -202,4 +202,22 @@ export function Form({ initialData, submitCallback, isSubmitting }: FormProps) {
       </div>
     </form>
   );
+}
+
+function convertSizesToObj(
+  selectedSizes:
+    | NonNullable<RouterOutputs["productManagement"]["get"]>["availableSizes"]
+    | undefined,
+  availableSizes: RouterOutputs["productManagement"]["getAllSizes"] | undefined,
+): Record<string, boolean> {
+  if (!availableSizes || !selectedSizes) {
+    return {};
+  }
+
+  const sizes: Partial<Record<Size, boolean>> = {};
+  for (const size of availableSizes) {
+    const has = selectedSizes.find((s) => s.size === size.size);
+    has ? (sizes[size.size] = true) : (sizes[size.size] = false);
+  }
+  return sizes;
 }
