@@ -8,6 +8,10 @@ import {
 import { addOrderSchema, getAllOrdersSchema } from "~/schemas/order";
 import { TRPCError } from "@trpc/server";
 import { type ProcessingState } from "@prisma/client";
+import {
+  transformProductPriceToView,
+  transformProductsPriceToView,
+} from "~/server/price-transformer";
 
 type Order = {
   id: string;
@@ -26,7 +30,7 @@ export const orderRouter = createTRPCRouter({
       const orders = await ctx.prisma.$queryRaw<Order[]>`
         SELECT id, name, email, totals.total, counts.count, processingState, createdAt
         FROM orders, (
-          SELECT orderId, SUM(price * quantity) as total
+          SELECT orderId, SUM(price / 100 * quantity) as total
           FROM order_items
           GROUP BY orderId
         ) as totals, (
@@ -62,6 +66,8 @@ export const orderRouter = createTRPCRouter({
     if (!total || !order) {
       return null;
     }
+
+    order.orderedItems = transformProductsPriceToView(order.orderedItems);
 
     return { ...order, total };
   }),
@@ -154,7 +160,7 @@ export const orderRouter = createTRPCRouter({
 
 async function getOrderTotal(orderId: string, ctx: Context) {
   const total = await ctx.prisma.$queryRaw<{ total: number }[]>`
-    SELECT SUM(price * quantity) as total
+    SELECT SUM(price / 100 * quantity) as total
     FROM order_items
     WHERE orderId = ${orderId}
     GROUP BY orderId
