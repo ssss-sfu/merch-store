@@ -61,23 +61,12 @@ export default function Product() {
   const handleAddToCart = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    if (size) {
-      const id = `${product.id}-${size}`;
-      addToCart({
-        id,
-        name: product.name,
-        size,
-        quantity,
-        imageLink: product.imageLink,
-      });
-    } else {
-      addToCart({
-        id: product.id,
-        name: product.name,
-        quantity,
-        imageLink: product.imageLink,
-      });
-    }
+    addToCart({
+      id: product.id,
+      size: size,
+      quantity,
+      price: product.price,
+    });
 
     toast({
       title: "Added to cart",
