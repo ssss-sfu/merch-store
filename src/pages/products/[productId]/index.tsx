@@ -129,13 +129,13 @@ export default function Product() {
                     </SelectTrigger>
                     <SelectContent>
                       {product.availableSizes
-                        .map(prod => prod.productSize.size)
-                        .sort((a, b) => sortedSize.indexOf(a) - sortedSize.indexOf(b))
+                        .map((prod) => prod.productSize.size)
+                        .sort(
+                          (a, b) =>
+                            sortedSize.indexOf(a) - sortedSize.indexOf(b),
+                        )
                         .map((size) => (
-                          <SelectItem
-                            key={size}
-                            value={size}
-                          >
+                          <SelectItem key={size} value={size}>
                             {size}
                           </SelectItem>
                         ))}
