@@ -1,6 +1,23 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+@font-face {
+  font-family: "DM Sans";
+  src: url("../../public/fonts/DMMono/DMMono-Light.ttf");
+  font-weight: 300;
+}
+
+@font-face {
+  font-family: "DM Mono";
+  src: url("../../public/fonts/DMMono/DMMono-Regular.ttf");
+  font-weight: 400;
+}
+
+@font-face {
+  font-family: "DM Mono";
+  src: url("../../public/fonts/DMMono/DMMono-Medium.ttf");
+  font-weight: 500;
+}
 
 @layer base {
   :root {
@@ -33,6 +50,8 @@
     --ring: 0 0% 3.9%;
 
     --radius: 0.5rem;
+
+    font-family: "DM Mono";
   }
 
   .dark {
