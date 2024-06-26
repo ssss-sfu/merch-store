@@ -10,11 +10,14 @@ export default function Header() {
       </Link>
       <nav>
         <ul className="flex gap-9">
-          <Link className="hidden sm:block" href="/products">
+          <Link
+            className="hidden underline-offset-8 hover:underline sm:block"
+            href="/products"
+          >
             Shop
           </Link>
           <Link
-            className="hidden sm:block"
+            className="hidden underline-offset-8 hover:underline sm:block"
             href="https://www.sfussss.org/"
             target="_blank"
           >

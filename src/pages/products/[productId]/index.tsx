@@ -80,8 +80,6 @@ export default function Product() {
     });
   };
 
-  const sortedSize: Size[] = ["xxs", "xs", "s", "m", "l", "xl", "xxl"];
-
   return (
     <Layout>
       <Header />
