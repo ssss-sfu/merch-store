@@ -80,8 +80,6 @@ export default function Product() {
     });
   };
 
-  const sortedSize: Size[] = ["xxs", "xs", "s", "m", "l", "xl", "xxl"];
-
   return (
     <Layout>
       <Header />
@@ -128,17 +126,14 @@ export default function Product() {
                       <SelectValue placeholder="Size" />
                     </SelectTrigger>
                     <SelectContent>
-                      {product.availableSizes
-                        .map(prod => prod.productSize.size)
-                        .sort((a, b) => sortedSize.indexOf(a) - sortedSize.indexOf(b))
-                        .map((size) => (
-                          <SelectItem
-                            key={size}
-                            value={size}
-                          >
-                            {size}
-                          </SelectItem>
-                        ))}
+                      {product.availableSizes.map(({ productSize }) => (
+                        <SelectItem
+                          key={productSize.size}
+                          value={productSize.size}
+                        >
+                          {productSize.size}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>
