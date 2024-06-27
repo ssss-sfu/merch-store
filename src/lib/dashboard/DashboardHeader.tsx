@@ -1,28 +1,38 @@
 import { signOut, useSession } from "next-auth/react";
+import { Logo } from "@/lib/components/icons/Logo";
 import Link from "next/link";
 
 export default function DashboardHeader() {
   const { data: session } = useSession();
   return (
-    <header className="flex justify-between">
-      <h1>Dashboard</h1>
-      <div className="flex gap-2">
-        <nav>
-          <ul className="flex gap-2">
-            <li>
-              <Link href="/dashboard/orders">Orders</Link>
-            </li>
-            <li>
-              <Link href="/dashboard/product-management">
-                Product Management
-              </Link>
-            </li>
-          </ul>
-        </nav>
-        {session && (
-          <button onClick={() => signOut({ callbackUrl: "/" })}>Logout</button>
-        )}
-      </div>
+    <header className="flex justify-between px-4 py-7">
+      <Link href="/products">
+        <Logo />
+      </Link>
+      <nav>
+        <ul className="flex gap-9">
+          <Link
+            className="hidden underline-offset-8 hover:underline sm:block"
+            href="/dashboard/orders"
+          >
+            Orders
+          </Link>
+          <Link
+            className="hidden underline-offset-8 hover:underline sm:block"
+            href="/dashboard/product-management"
+          >
+            Product Management
+          </Link>
+          {session && (
+            <button
+              className="hidden underline-offset-8 hover:underline sm:block"
+              onClick={() => signOut({ callbackUrl: "/" })}
+            >
+              Logout
+            </button>
+          )}
+        </ul>
+      </nav>
     </header>
   );
 }
