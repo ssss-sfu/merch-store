@@ -41,13 +41,10 @@ export default function Index() {
 
   const {
     data: products,
-    isLoading,
-    isError,
   } = api.product.getFromCart.useQuery(
     cart.map((item) => ({ id: item.id, size: item.size, price: item.price })),
   );
 
-  console.log(products);
 
   const {
     register,
