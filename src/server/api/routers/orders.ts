@@ -9,7 +9,7 @@ import { addOrderSchema, getAllOrdersSchema } from "~/schemas/order";
 import { TRPCError } from "@trpc/server";
 import { type ProcessingState } from "@prisma/client";
 import {
-  transformProductPriceToView,
+  transformPriceToModel,
   transformProductsPriceToView,
 } from "~/server/price-transformer";
 
@@ -74,50 +74,77 @@ export const orderRouter = createTRPCRouter({
   add: publicProcedure
     .input(addOrderSchema)
     .mutation(async ({ ctx, input }) => {
-      // TODO: Verify size
-      await ctx.prisma.$transaction(async (prisma) => {
-        const productPrices = await prisma.product.findMany({
-          select: {
-            id: true,
-            price: true,
-          },
-          where: {
-            archived: false,
-          },
-        });
-
-        const productPricesMap = new Map(
-          productPrices.map((p) => [p.id, p.price]),
-        );
-
-        await ctx.prisma.order.create({
-          data: {
-            name: input.name,
-            email: input.email,
-            orderedItems: {
-              createMany: {
-                data: input.products.map((product) => {
-                  const productId = product.id.split("-")[0]!;
-                  const price = productPricesMap.get(productId);
-
-                  if (price !== 0 && !price) {
-                    throw new TRPCError({
-                      code: "CONFLICT",
-                      message: "Product no longer exists",
-                    });
-                  }
-
-                  return {
-                    productId,
-                    quantity: product.quantity,
-                    size: product.size,
-                    price,
-                  };
-                }),
-              },
+      const products = await ctx.prisma.product.findMany({
+        include: {
+          availableSizes: {
+            include: {
+              productSize: true,
             },
           },
-        });
+        },
+        where: {
+          OR: input.products.map((cartItem) => ({ id: cartItem.id })),
+        },
+      });
+
+      const errors = input.products.reduce((accumulator, cartItem) => {
+        const targetProduct = products.find((p) => p.id === cartItem.id);
+
+        if (!targetProduct) {
+          accumulator.push(`Product with id ${cartItem.id} does not exist`);
+          return accumulator;
+        }
+
+        if (targetProduct.archived) {
+          accumulator.push(`Product with id ${cartItem.id} has been archived`);
+          return accumulator;
+        }
+
+        const cartItemPrice = transformPriceToModel(cartItem.price);
+        if (targetProduct.price !== cartItemPrice) {
+          accumulator.push(`The price for product ${targetProduct.name}`);
+          return accumulator;
+        }
+
+        if (
+          cartItem.size &&
+          !targetProduct.availableSizes.find(
+            (as) => as.productSize.size === cartItem.size,
+          )
+        ) {
+          accumulator.push(
+            `The size ${cartItem.size} is no loger available. The available sizes are ${targetProduct.availableSizes.map((s) => s.productSize.size).join(", ")}`,
+          );
+          return accumulator;
+        }
+
+        return accumulator;
+      }, [] as string[]);
+
+      if (errors.length > 0) {
+        return {
+          type: "error" as const,
+          errors,
+        };
+      }
+
+      await ctx.prisma.order.create({
+        data: {
+          name: input.name,
+          email: input.email,
+          orderedItems: {
+            createMany: {
+              data: input.products.map((product) => {
+                return {
+                  productId: product.id,
+                  quantity: product.quantity,
+                  size: product.size,
+                  price: product.price,
+                };
+              }),
+            },
+          },
+        },
       });
     }),
   updateProcessingState: protectedProcedure
