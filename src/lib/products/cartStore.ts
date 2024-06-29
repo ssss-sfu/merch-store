@@ -1,16 +1,17 @@
 import { atom } from "jotai";
-import { type RouterInputs } from "~/utils/api";
+import { type GetCartInput } from "~/schemas/order";
 
-export type CartItem = RouterInputs["order"]["add"]["products"][number] & {
-  name: string;
-  imageLink: string;
+export type CartItem = GetCartInput & {
+  quantity: number;
 };
 
 export const cartAtom = atom<CartItem[]>([]);
 
 export const addToCartAtom = atom(null, (get, set, update: CartItem) => {
   const cart = get(cartAtom);
-  const index = cart.findIndex((item) => item.id === update.id);
+  const index = cart.findIndex(
+    (item) => item.id === update.id && item.size === update.size,
+  );
 
   if (index === -1) {
     set(cartAtom, [...cart, update]);
@@ -29,9 +30,11 @@ export const addToCartAtom = atom(null, (get, set, update: CartItem) => {
 
 export const updateCartItemQuantityAtom = atom(
   null,
-  (get, set, update: { id: string; quantity: number }) => {
+  (get, set, update: Pick<CartItem, "id" | "size" | "quantity">) => {
     const cart = get(cartAtom);
-    const index = cart.findIndex((item) => item.id === update.id);
+    const index = cart.findIndex(
+      (item) => item.id === update.id && item.size === update.size,
+    );
 
     if (index === -1) {
       return;
@@ -51,11 +54,11 @@ export const updateCartItemQuantityAtom = atom(
 
 export const removeFromCartAtom = atom(
   null,
-  (get, set, update: { id: string }) => {
+  (get, set, update: Pick<CartItem, "id" | "size">) => {
     const cart = get(cartAtom);
     set(
       cartAtom,
-      cart.filter((item) => item.id !== update.id),
+      cart.filter((item) => item.id !== update.id || item.size !== update.size),
     );
   },
 );

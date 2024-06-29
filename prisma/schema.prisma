@@ -103,7 +103,7 @@ model Product {
   id        String   @id @default(cuid())
   imageLink String   @db.VarChar(2048)
   name      String
-  price     Float
+  price     Int
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   archived  Boolean  @default(false)
