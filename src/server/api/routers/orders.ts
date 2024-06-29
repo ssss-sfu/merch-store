@@ -96,7 +96,7 @@ export const orderRouter = createTRPCRouter({
         }
 
         if (targetProduct.archived) {
-          accumulator.push(`Product with id ${cartItem.id} has been archived`);
+          accumulator.push(`Product ${targetProduct.name} has been archived`);
           return accumulator;
         }
 
@@ -113,7 +113,7 @@ export const orderRouter = createTRPCRouter({
           )
         ) {
           accumulator.push(
-            `The size ${cartItem.size} is no loger available. The available sizes are ${targetProduct.availableSizes.map((s) => s.productSize.size).join(", ")}`,
+            `The size ${cartItem.size} is no longer available. The available sizes are ${targetProduct.availableSizes.map((s) => s.productSize.size).join(", ")}`,
           );
           return accumulator;
         }
