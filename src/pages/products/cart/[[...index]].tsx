@@ -39,12 +39,9 @@ export default function Index() {
 
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const {
-    data: products,
-  } = api.product.getFromCart.useQuery(
+  const { data: products } = api.product.getFromCart.useQuery(
     cart.map((item) => ({ id: item.id, size: item.size, price: item.price })),
   );
-
 
   const {
     register,
@@ -58,7 +55,22 @@ export default function Index() {
 
   const { toast } = useToast();
   const placeOrderMutation = api.order.add.useMutation({
-    onSuccess() {
+    onSuccess(res) {
+      if (res?.type && res.type === "error") {
+        toast({
+          title: "An error occured",
+          variant: "destructive",
+          description: (
+            <ul>
+              {res.errors.map((error) => (
+                <li key={error}>{error}</li>
+              ))}
+            </ul>
+          ),
+        });
+        setIsModalOpen(false);
+        return;
+      }
       toast({ title: "Order placed" });
       clearCart();
       reset();
@@ -214,29 +226,40 @@ function CartItemComponent({ cart, product }: CartItemComponentProps) {
             <Button
               variant="outline"
               onClick={() => removeFromCart({ id: cart.id, size: cart.size })}
-              disabled={product.type === "archived"}
             >
               Remove
             </Button>
           </div>
         </div>
+        {product.type === "archived" ? (
+          <p>This product has been archived. Please remove from your cart.</p>
+        ) : (
+          <>
+            {!!product?.errors?.length && (
+              <div>
+                <h3 className="mb-4">Notes:</h3>
+                <ul className="ml-auto">
+                  {product.errors.map((error, i) => (
+                    <li key={i}>
+                      {error.type === "size" ? (
+                        <p>
+                          The size {cart.size} does not exist anymore. The
+                          available sizes are {error.availableSizes.join(" ")}
+                        </p>
+                      ) : (
+                        <p>
+                          The price of this product was changed to $
+                          {error.price}
+                        </p>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </>
+        )}
       </div>
-      {!!product?.errors?.length && (
-        <ul className="rounded bg-red-300 p-2">
-          {product.errors.map((error, i) => (
-            <li key={i}>
-              {error.type === "size" ? (
-                <p>
-                  The size {cart.size} does not exist anymore. The available
-                  sizes are {error.availableSizes.join(" ")}
-                </p>
-              ) : (
-                <p>The price of this product was changed to ${error.price}</p>
-              )}
-            </li>
-          ))}
-        </ul>
-      )}
     </li>
   );
 }
