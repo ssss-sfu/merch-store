@@ -105,6 +105,16 @@ export const productRouter = createTRPCRouter({
           });
         }
 
+        if (!cartItem.size && targetProduct.availableSizes.length > 0) {
+          errors.push({
+            type: "size",
+            invalidSize: "undefined",
+            availableSizes: targetProduct.availableSizes.map(
+              (s) => s.productSize.size,
+            ),
+          });
+        }
+
         return {
           type: "normal" as const,
           id: targetProduct.id,

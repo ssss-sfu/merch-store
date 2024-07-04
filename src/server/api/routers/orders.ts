@@ -102,8 +102,9 @@ export const orderRouter = createTRPCRouter({
 
         const cartItemPrice = transformPriceToModel(cartItem.price);
         if (targetProduct.price !== cartItemPrice) {
-          accumulator.push(`The price for product ${targetProduct.name}`);
-          return accumulator;
+          accumulator.push(
+            `The price for product ${targetProduct.name} has changed`,
+          );
         }
 
         if (
@@ -113,9 +114,12 @@ export const orderRouter = createTRPCRouter({
           )
         ) {
           accumulator.push(
-            `The size ${cartItem.size} is no longer available. The available sizes are ${targetProduct.availableSizes.map((s) => s.productSize.size).join(", ")}`,
+            `The size ${cartItem.size} is no longer available for product ${targetProduct.name}. The available sizes are ${targetProduct.availableSizes.map((s) => s.productSize.size).join(", ")}`,
           );
-          return accumulator;
+        }
+
+        if (!cartItem.size && targetProduct.availableSizes.length > 0) {
+          accumulator.push(`Product ${targetProduct.name} no longer has sizes`);
         }
 
         return accumulator;
@@ -139,7 +143,7 @@ export const orderRouter = createTRPCRouter({
                   productId: product.id,
                   quantity: product.quantity,
                   size: product.size,
-                  price: product.price,
+                  price: transformPriceToModel(product.price),
                 };
               }),
             },

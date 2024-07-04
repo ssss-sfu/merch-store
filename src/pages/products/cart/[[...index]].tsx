@@ -41,7 +41,9 @@ export default function Index() {
 
   const { data: products } = api.product.getFromCart.useQuery(
     cart.map((item) => ({ id: item.id, size: item.size, price: item.price })),
+    { refetchOnWindowFocus: false },
   );
+  const queryUtils = api.useUtils();
 
   const {
     register,
@@ -55,7 +57,7 @@ export default function Index() {
 
   const { toast } = useToast();
   const placeOrderMutation = api.order.add.useMutation({
-    onSuccess(res) {
+    async onSuccess(res) {
       if (res?.type && res.type === "error") {
         toast({
           title: "An error occured",
@@ -68,6 +70,7 @@ export default function Index() {
             </ul>
           ),
         });
+        await queryUtils.product.getFromCart.invalidate();
         setIsModalOpen(false);
         return;
       }
