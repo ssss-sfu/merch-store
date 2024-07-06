@@ -3,7 +3,6 @@ version: "3.3"
 services:
   db:
     image: mysql:8.0.30
-    restart: always
     environment:
       - MYSQL_DATABASE=merch
       - MYSQL_ROOT_PASSWORD=test123

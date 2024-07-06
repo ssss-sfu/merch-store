@@ -1,18 +1,23 @@
 import { useAtomValue, useSetAtom } from "jotai";
 import {
-  type CartItem,
+  type CartItem as CartItemComponent,
   cartAtom,
   clearCartAtom,
   removeFromCartAtom,
   updateCartItemQuantityAtom,
+  type CartItem,
 } from "@/lib/products/cartStore";
 import Header from "@/lib/products/Header";
 import { Input } from "@/ui/input";
 import Layout from "@/lib/components/Layout";
 import { Button } from "@/ui/button";
-import { DialogContent, DialogTitle, DialogTrigger } from "@/ui/dialog";
-import dynamic from "next/dynamic";
-import { api } from "~/utils/api";
+import {
+  DialogContent,
+  DialogTitle,
+  DialogTrigger,
+  Dialog as ClientSideDialog,
+} from "@/ui/dialog";
+import { type RouterOutputs, api } from "~/utils/api";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { type AddFormOrder, addFormOrderSchema } from "~/schemas/order";
@@ -22,28 +27,28 @@ import { useState } from "react";
 import Image from "next/image";
 import { DisclaimerText } from "@/lib/products/DisclaimerText";
 
-// Prevent Nextjs hydration warning
-const ClientSideDialog = dynamic(
-  () => import("@/ui/dialog").then((mod) => mod.Dialog),
-  {
-    ssr: false,
-  },
-);
+type Product = RouterOutputs["product"]["getFromCart"][number];
 
 export default function Index() {
+  return (
+    <Layout>
+      <Header />
+      <Content />
+    </Layout>
+  );
+}
+
+function Content() {
   const cart = useAtomValue(cartAtom);
   const clearCart = useSetAtom(clearCartAtom);
 
-  const setQuantity = useSetAtom(updateCartItemQuantityAtom);
-  const handleQuantityChange = (id: string, quantity: number) =>
-    setQuantity({ id, quantity });
-
-  const removeFromCart = useSetAtom(removeFromCartAtom);
-  const handleRemove = (id: string) => removeFromCart({ id });
-
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const { data: products, isLoading } = api.product.getAll.useQuery(undefined);
+  const { data: products } = api.product.getFromCart.useQuery(
+    cart.map((item) => ({ id: item.id, size: item.size, price: item.price })),
+    { refetchOnWindowFocus: false },
+  );
+  const queryUtils = api.useUtils();
 
   const {
     register,
@@ -57,7 +62,23 @@ export default function Index() {
 
   const { toast } = useToast();
   const placeOrderMutation = api.order.add.useMutation({
-    onSuccess() {
+    async onSuccess(res) {
+      if (res?.type && res.type === "error") {
+        toast({
+          title: "An error occured",
+          variant: "destructive",
+          description: (
+            <ul>
+              {res.errors.map((error) => (
+                <li key={error}>{error}</li>
+              ))}
+            </ul>
+          ),
+        });
+        await queryUtils.product.getFromCart.invalidate();
+        setIsModalOpen(false);
+        return;
+      }
       toast({ title: "Order placed" });
       clearCart();
       reset();
@@ -78,30 +99,11 @@ export default function Index() {
     placeOrderMutation.mutate({ ...data, products: cart }),
   );
 
-  if (isLoading) {
-    return <p>Loading...</p>;
-  }
-
-  if (!products) {
-    return <p>Failed to load products</p>;
-  }
-
-  const productPriceMap = new Map(products.map((p) => [p.id, p.price]));
   const totalPrice: string = cart
     .reduce((accumulator, currentItem) => {
-      const productId = currentItem.size
-        ? currentItem.id.split("-")[0]!
-        : currentItem.id;
       const quantity = currentItem.quantity;
 
-      const price = productPriceMap.get(productId);
-      let totalAddedPrice = 0;
-
-      if (price) {
-        totalAddedPrice += price * quantity;
-      }
-
-      return accumulator + totalAddedPrice;
+      return accumulator + quantity * currentItem.price;
     }, 0)
     .toFixed(2);
 
@@ -113,15 +115,14 @@ export default function Index() {
         <section className="flex flex-col-reverse	gap-10 md:flex-row">
           {cart.length ? (
             <ul className="flex w-full	flex-col gap-8">
-              {cart.map((item) => {
-                const productId = item.size ? item.id.split("-")[0] : item.id;
+              {cart.map((cartItem) => {
                 return (
-                  <CartItem
-                    key={item.id}
-                    price={productPriceMap.get(productId!)}
-                    {...item}
-                    handleRemove={handleRemove}
-                    handleQuantityChange={handleQuantityChange}
+                  <CartItemComponent
+                    key={cartItem.id}
+                    cart={cartItem}
+                    product={products?.find(
+                      (product) => product.id === cartItem.id,
+                    )}
                   />
                 );
               })}
@@ -176,61 +177,99 @@ export default function Index() {
   );
 }
 
-type CartItemProps = CartItem & {
-  price: number | undefined;
-  handleQuantityChange: (id: string, quantity: number) => void;
-  handleRemove: (id: string) => void;
+type CartItemComponentProps = {
+  cart: CartItem;
+  product: Product | undefined;
 };
 
-function CartItem({
-  id,
-  name,
-  size,
-  price,
-  quantity,
-  imageLink,
-  handleQuantityChange,
-  handleRemove,
-}: CartItemProps) {
+function CartItemComponent({ cart, product }: CartItemComponentProps) {
+  const setQuantity = useSetAtom(updateCartItemQuantityAtom);
+  const handleQuantityChange = (id: string, quantity: number) =>
+    setQuantity({ id, quantity, size: cart.size });
+
+  const removeFromCart = useSetAtom(removeFromCartAtom);
+
+  if (!product) {
+    return <div>Loading...</div>;
+  }
+
+  if (product.type === "not-exist") {
+    return (
+      <div>
+        <p>This product doesn&#39;t exist</p>
+      </div>
+    );
+  }
+
   return (
-    <li className="flex items-start gap-8">
-      <Image
-        priority={true}
-        width={500}
-        height={500}
-        className="aspect-square w-[30%] max-w-[180px] overflow-hidden rounded-xl object-cover"
-        src={imageLink}
-        alt={name}
-      />
-      <ul>
-        <li>
-          <h3 className="pb-4 font-medium	">{name}</h3>
-        </li>
-        <li className="flex items-center gap-2 text-sm">
-          <label>Quantity:</label>
-          <Input
-            type="number"
-            className="w-16"
-            min={1}
-            onChange={(e) => handleQuantityChange(id, e.target.valueAsNumber)}
-            value={quantity}
-          />
-        </li>
-        {!!size && <li className="text-sm">Size: {size}</li>}
-        <li className="text-sm">
-          Total Price:{" "}
-          {price ? (
-            <span>${(price * quantity).toFixed(2)}</span>
-          ) : (
-            <span>This product is no longer sold</span>
-          )}
-        </li>
-        <li className="pt-2">
-          <Button variant="outline" onClick={() => handleRemove(id)}>
-            Remove
-          </Button>
-        </li>
-      </ul>
+    <li>
+      <div className="flex items-start gap-8">
+        <Image
+          priority={true}
+          width={500}
+          height={500}
+          className="aspect-square w-[30%] max-w-[180px] overflow-hidden rounded-xl object-cover"
+          src={product.imageLink}
+          alt={product.name}
+        />
+        <div>
+          <h3 className="pb-4 font-medium	">{product.name}</h3>
+          <div className="flex items-center gap-2 text-sm">
+            <label>Quantity:</label>
+            <Input
+              type="number"
+              className="w-16"
+              min={1}
+              onChange={(e) =>
+                handleQuantityChange(product.id, e.target.valueAsNumber)
+              }
+              value={cart.quantity}
+            />
+          </div>
+          {!!cart.size && <li className="text-sm">Size: {cart.size}</li>}
+          <p className="text-sm">
+            Total Price: <span>${(cart.price * cart.quantity).toFixed(2)}</span>
+          </p>
+          <div className="pt-2">
+            <Button
+              variant="outline"
+              onClick={() => removeFromCart({ id: cart.id, size: cart.size })}
+            >
+              Remove
+            </Button>
+          </div>
+        </div>
+        {product.type === "archived" ? (
+          <p>This product has been archived. Please remove from your cart.</p>
+        ) : (
+          <>
+            {!!product?.errors?.length && (
+              <div>
+                <h3 className="mb-4">Notes:</h3>
+                <ul className="ml-auto">
+                  {product.errors.map((error, i) => (
+                    <li key={i}>
+                      {error.type === "size" ? (
+                        <p>
+                          The size {error.invalidSize} does not exist anymore.
+                          The available sizes are{" "}
+                          {error.availableSizes.join(", ")}
+                        </p>
+                      ) : (
+                        <p>
+                          The price of this product was changed to $
+                          {error.price}
+                        </p>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+                <p>Please remove and add the item again</p>
+              </div>
+            )}
+          </>
+        )}
+      </div>
     </li>
   );
 }

@@ -7,6 +7,7 @@ export const addOrderSchema = z.object({
     .object({
       id: z.string(),
       quantity: z.number().min(1),
+      price: z.number().gte(0),
       size: z.enum(["xxs", "xs", "s", "m", "l", "xl", "xxl"]).optional(),
     })
     .array()
@@ -23,3 +24,13 @@ export type AddFormOrder = z.infer<typeof addFormOrderSchema>;
 export const getAllOrdersSchema = z.object({
   processingState: z.enum(["processing", "processed"]),
 });
+
+export const cartSchema = z
+  .object({
+    id: z.string(),
+    size: z.enum(["xxs", "xs", "s", "m", "l", "xl", "xxl"]).optional(),
+    price: z.number().gte(0),
+  })
+  .array();
+
+export type GetCartInput = z.infer<typeof cartSchema>[number];

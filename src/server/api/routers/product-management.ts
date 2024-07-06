@@ -6,6 +6,12 @@ import {
 } from "~/schemas/productManagement";
 import { Prisma } from "@prisma/client";
 import { TRPCError } from "@trpc/server";
+import {
+  transformPriceToModel,
+  transformPriceToView,
+  transformProductPriceToView,
+  transformProductsPriceToView,
+} from "~/server/price-transformer";
 
 export const productManagementRouter = createTRPCRouter({
   add: protectedProcedure
@@ -15,7 +21,7 @@ export const productManagementRouter = createTRPCRouter({
         const product = await prisma.product.create({
           data: {
             name: input.name,
-            price: input.price,
+            price: input.price * 100,
             imageLink: input.imageLink,
             aboutProducts: {
               createMany: {
@@ -66,7 +72,7 @@ export const productManagementRouter = createTRPCRouter({
             },
             data: {
               name: input.name,
-              price: input.price,
+              price: transformPriceToModel(input.price),
               imageLink: input.imageLink,
               archived: input.archived,
             },
@@ -124,7 +130,7 @@ export const productManagementRouter = createTRPCRouter({
   }),
   getAll: protectedProcedure.query(async ({ ctx }) => {
     const products = await ctx.prisma.product.findMany();
-    return products;
+    return transformProductsPriceToView(products);
   }),
   get: protectedProcedure.input(z.string()).query(async ({ ctx, input }) => {
     const product = await ctx.prisma.product.findUnique({
@@ -142,14 +148,14 @@ export const productManagementRouter = createTRPCRouter({
     });
 
     if (product) {
-      return {
+      return transformProductPriceToView({
         ...product,
         availableSizes: product.availableSizes.map(({ productSize }) => {
           return {
             size: productSize.size,
           };
         }),
-      };
+      });
     }
 
     return null;

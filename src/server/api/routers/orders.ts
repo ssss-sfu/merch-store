@@ -8,6 +8,10 @@ import {
 import { addOrderSchema, getAllOrdersSchema } from "~/schemas/order";
 import { TRPCError } from "@trpc/server";
 import { type ProcessingState } from "@prisma/client";
+import {
+  transformPriceToModel,
+  transformProductsPriceToView,
+} from "~/server/price-transformer";
 
 type Order = {
   id: string;
@@ -26,7 +30,7 @@ export const orderRouter = createTRPCRouter({
       const orders = await ctx.prisma.$queryRaw<Order[]>`
         SELECT id, name, email, totals.total, counts.count, processingState, createdAt
         FROM orders, (
-          SELECT orderId, SUM(price * quantity) as total
+          SELECT orderId, SUM(price / 100 * quantity) as total
           FROM order_items
           GROUP BY orderId
         ) as totals, (
@@ -63,55 +67,88 @@ export const orderRouter = createTRPCRouter({
       return null;
     }
 
+    order.orderedItems = transformProductsPriceToView(order.orderedItems);
+
     return { ...order, total };
   }),
   add: publicProcedure
     .input(addOrderSchema)
     .mutation(async ({ ctx, input }) => {
-      // TODO: Verify size
-      await ctx.prisma.$transaction(async (prisma) => {
-        const productPrices = await prisma.product.findMany({
-          select: {
-            id: true,
-            price: true,
-          },
-          where: {
-            archived: false,
-          },
-        });
-
-        const productPricesMap = new Map(
-          productPrices.map((p) => [p.id, p.price]),
-        );
-
-        await ctx.prisma.order.create({
-          data: {
-            name: input.name,
-            email: input.email,
-            orderedItems: {
-              createMany: {
-                data: input.products.map((product) => {
-                  const productId = product.id.split("-")[0]!;
-                  const price = productPricesMap.get(productId);
-
-                  if (price !== 0 && !price) {
-                    throw new TRPCError({
-                      code: "CONFLICT",
-                      message: "Product no longer exists",
-                    });
-                  }
-
-                  return {
-                    productId,
-                    quantity: product.quantity,
-                    size: product.size,
-                    price,
-                  };
-                }),
-              },
+      const products = await ctx.prisma.product.findMany({
+        include: {
+          availableSizes: {
+            include: {
+              productSize: true,
             },
           },
-        });
+        },
+        where: {
+          OR: input.products.map((cartItem) => ({ id: cartItem.id })),
+        },
+      });
+
+      const errors = input.products.reduce((accumulator, cartItem) => {
+        const targetProduct = products.find((p) => p.id === cartItem.id);
+
+        if (!targetProduct) {
+          accumulator.push(`Product with id ${cartItem.id} does not exist`);
+          return accumulator;
+        }
+
+        if (targetProduct.archived) {
+          accumulator.push(`Product ${targetProduct.name} has been archived`);
+          return accumulator;
+        }
+
+        const cartItemPrice = transformPriceToModel(cartItem.price);
+        if (targetProduct.price !== cartItemPrice) {
+          accumulator.push(
+            `The price for product ${targetProduct.name} has changed`,
+          );
+        }
+
+        if (
+          cartItem.size &&
+          !targetProduct.availableSizes.find(
+            (as) => as.productSize.size === cartItem.size,
+          )
+        ) {
+          accumulator.push(
+            `The size ${cartItem.size} is no longer available for product ${targetProduct.name}. The available sizes are ${targetProduct.availableSizes.map((s) => s.productSize.size).join(", ")}`,
+          );
+        }
+
+        if (!cartItem.size && targetProduct.availableSizes.length > 0) {
+          accumulator.push(`Product ${targetProduct.name} no longer has sizes`);
+        }
+
+        return accumulator;
+      }, [] as string[]);
+
+      if (errors.length > 0) {
+        return {
+          type: "error" as const,
+          errors,
+        };
+      }
+
+      await ctx.prisma.order.create({
+        data: {
+          name: input.name,
+          email: input.email,
+          orderedItems: {
+            createMany: {
+              data: input.products.map((product) => {
+                return {
+                  productId: product.id,
+                  quantity: product.quantity,
+                  size: product.size,
+                  price: transformPriceToModel(product.price),
+                };
+              }),
+            },
+          },
+        },
       });
     }),
   updateProcessingState: protectedProcedure
@@ -154,7 +191,7 @@ export const orderRouter = createTRPCRouter({
 
 async function getOrderTotal(orderId: string, ctx: Context) {
   const total = await ctx.prisma.$queryRaw<{ total: number }[]>`
-    SELECT SUM(price * quantity) as total
+    SELECT SUM(price / 100 * quantity) as total
     FROM order_items
     WHERE orderId = ${orderId}
     GROUP BY orderId
