@@ -11,8 +11,12 @@ import Header from "@/lib/products/Header";
 import { Input } from "@/ui/input";
 import Layout from "@/lib/components/Layout";
 import { Button } from "@/ui/button";
-import { DialogContent, DialogTitle, DialogTrigger } from "@/ui/dialog";
-import dynamic from "next/dynamic";
+import {
+  DialogContent,
+  DialogTitle,
+  DialogTrigger,
+  Dialog as ClientSideDialog,
+} from "@/ui/dialog";
 import { type RouterOutputs, api } from "~/utils/api";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -23,17 +27,18 @@ import { useState } from "react";
 import Image from "next/image";
 import { DisclaimerText } from "@/lib/products/DisclaimerText";
 
-// Prevent Nextjs hydration warning
-const ClientSideDialog = dynamic(
-  () => import("@/ui/dialog").then((mod) => mod.Dialog),
-  {
-    ssr: false,
-  },
-);
-
 type Product = RouterOutputs["product"]["getFromCart"][number];
 
 export default function Index() {
+  return (
+    <Layout>
+      <Header />
+      <Content />
+    </Layout>
+  );
+}
+
+function Content() {
   const cart = useAtomValue(cartAtom);
   const clearCart = useSetAtom(clearCartAtom);
 
@@ -246,8 +251,9 @@ function CartItemComponent({ cart, product }: CartItemComponentProps) {
                     <li key={i}>
                       {error.type === "size" ? (
                         <p>
-                          The size {cart.size} does not exist anymore. The
-                          available sizes are {error.availableSizes.join(" ")}
+                          The size {error.invalidSize} does not exist anymore.
+                          The available sizes are{" "}
+                          {error.availableSizes.join(", ")}
                         </p>
                       ) : (
                         <p>
@@ -258,6 +264,7 @@ function CartItemComponent({ cart, product }: CartItemComponentProps) {
                     </li>
                   ))}
                 </ul>
+                <p>Please remove and add the item again</p>
               </div>
             )}
           </>
