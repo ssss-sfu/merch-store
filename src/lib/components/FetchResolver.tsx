@@ -7,16 +7,19 @@ type Props<TData> = UseTRPCQueryResult<
   TRPCClientErrorBase<DefaultErrorShape>
 > & {
   children: (data: TData) => React.ReactNode;
+  loader?: React.ReactNode;
 };
 
 export default function FetchResolver<TData>({
   data,
   isLoading,
+  loader,
   isError,
   children,
 }: Props<TData>) {
+  // isLoading = true;
   if (isLoading) {
-    return <div>Loading...</div>;
+    return loader ?? <div>Loading...</div>;
   } else if (isError) {
     return <div>Something went wrong</div>;
   } else {

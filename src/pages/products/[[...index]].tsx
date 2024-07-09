@@ -5,6 +5,7 @@ import FetchResolver from "@/lib/components/FetchResolver";
 import Layout from "@/lib/components/Layout";
 import Image from "next/image";
 import { type RouterOutputs, api } from "~/utils/api";
+import { Skeleton } from "~/lib/components/ui/skeleton";
 
 type Products = RouterOutputs["product"]["getAll"];
 
@@ -15,8 +16,13 @@ export default function Products() {
     <Layout>
       <Header />
       <main>
-        <section className="grid grid-cols-2 gap-4 px-4 md:grid-cols-3 md:gap-12 lg:grid-cols-4 lg:gap-8">
-          <FetchResolver {...productsQuery}>
+        <section className="grid grid-cols-1 gap-8 px-4 sm:grid-cols-[repeat(auto-fill,minmax(12rem,1fr))]">
+          <FetchResolver
+            {...productsQuery}
+            loader={Array.from({ length: 6 }).map((_, i) => (
+              <Skeleton key={i} className="aspect-[3.5/4] w-full" />
+            ))}
+          >
             {(products) =>
               products.map((product) => (
                 <Product key={product.id} {...product} />
@@ -31,20 +37,20 @@ export default function Products() {
 }
 
 function Product({ id, name, price, imageLink }: Products[number]) {
-  const priceLabel: string =
+  const priceLabel =
     `${price}`.split(".").length > 1 ? `${price}` : `${price}.00`;
 
   return (
     <Link
       href={`./${id}`}
       key={id}
-      className="flex aspect-square flex-col items-center gap-3	text-center "
+      className="grid aspect-[3.5/4] w-full flex-col items-center gap-3 text-center"
     >
       <Image
         priority={true}
         width={208}
         height={208}
-        className="mb-3 h-full w-full overflow-hidden rounded-xl object-cover	"
+        className="mb-3 h-full w-full overflow-hidden rounded-xl object-cover"
         src={imageLink}
         alt={name}
       />
