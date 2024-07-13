@@ -19,7 +19,7 @@ export default function Add() {
   };
 
   return (
-    <main className="flex h-full items-center justify-center">
+    <main className="flex h-full items-center justify-center p-4">
       <Form
         initialData={null}
         submitCallback={submitCallback}

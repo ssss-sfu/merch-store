@@ -5,7 +5,7 @@ import Link from "next/link";
 export default function DashboardHeader() {
   const { data: session } = useSession();
   return (
-    <header className="flex justify-between px-4 py-7">
+    <header className="flex justify-between px-4 py-7 sm:p-0">
       <Link href="/products">
         <Logo />
       </Link>

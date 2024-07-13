@@ -4,7 +4,7 @@ import { IconCart } from "@/lib/components/icons/icon-cart";
 
 export default function Header() {
   return (
-    <header className="flex justify-between px-4 py-7">
+    <header className="flex justify-between py-7">
       <Link href="/products">
         <Logo />
       </Link>

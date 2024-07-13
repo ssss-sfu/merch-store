@@ -16,7 +16,7 @@ export default function Products() {
     <Layout>
       <Header />
       <main>
-        <section className="grid grid-cols-1 gap-8 px-4 sm:grid-cols-[repeat(auto-fill,minmax(12rem,1fr))]">
+        <section className="grid grid-cols-1 gap-8 sm:grid-cols-[repeat(auto-fill,minmax(12rem,1fr))]">
           <FetchResolver
             {...productsQuery}
             loader={Array.from({ length: 6 }).map((_, i) => (
@@ -44,16 +44,18 @@ function Product({ id, name, price, imageLink }: Products[number]) {
     <Link
       href={`./${id}`}
       key={id}
-      className="grid aspect-[3.5/4] w-full flex-col items-center gap-3 text-center"
+      className="grid aspect-[3.5/4] w-full grid-rows-[1fr_auto_auto] flex-col items-center gap-3 text-center"
     >
-      <Image
-        priority={true}
-        width={208}
-        height={208}
-        className="mb-3 h-full w-full overflow-hidden rounded-xl object-cover"
-        src={imageLink}
-        alt={name}
-      />
+      <div className="relative">
+        <Image
+          priority={true}
+          fill
+          sizes="(min-width: 640px): 100vw, 20vw"
+          className="mb-3 h-full w-full overflow-hidden rounded-xl object-cover"
+          src={imageLink}
+          alt={name}
+        />
+      </div>
       <h3 className="text-xs">{name}</h3>
       <span className="text-base">${priceLabel}</span>
     </Link>

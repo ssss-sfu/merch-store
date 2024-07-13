@@ -19,6 +19,7 @@ import { useState } from "react";
 import { Button } from "@/ui/button";
 import FetchResolver from "@/lib/components/FetchResolver";
 import { useRouter } from "next/router";
+import { Skeleton } from "~/lib/components/ui/skeleton";
 
 export { getServerSideProps } from "~/utils/serverSideAuth";
 
@@ -58,7 +59,10 @@ export default function Orders() {
         </div>
         <section>
           <div className="py-10">
-            <FetchResolver {...orderResponse}>
+            <FetchResolver
+              {...orderResponse}
+              loader={<Skeleton className="h-[500px] w-full" />}
+            >
               {(data) => {
                 return (
                   // eslint-disable-next-line @typescript-eslint/no-explicit-any

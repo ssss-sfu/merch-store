@@ -5,10 +5,20 @@ import { Form } from "@/lib/dashboard/ProductForm";
 import { api } from "~/utils/api";
 import { useToast } from "@/ui/use-toast";
 import { type FormSchema } from "~/schemas/productManagement";
+import { Skeleton } from "~/lib/components/ui/skeleton";
 
 export { getServerSideProps } from "~/utils/serverSideAuth";
 
 export default function Product() {
+  return (
+    <Layout>
+      <DashboardHeader />
+      <Content />
+    </Layout>
+  );
+}
+
+function Content() {
   const router = useRouter();
 
   const productId = router.query.productId as string | undefined;
@@ -37,7 +47,25 @@ export default function Product() {
   });
 
   if (isLoading) {
-    return <div>Loading...</div>;
+    return (
+      <div className="mx-auto w-full max-w-md space-y-4 p-4">
+        <div className="mx-auto flex  justify-between">
+          <Skeleton className="inline-block h-10 w-20" />
+          <Skeleton className="inline-block h-10 w-20" />
+        </div>
+        <div className="space-y-2">
+          <Skeleton className="h-10 w-full" />
+          <Skeleton className="h-10 w-full" />
+          <Skeleton className="h-10 w-full" />
+          <Skeleton className="h-10 w-full" />
+          <Skeleton className="h-10 w-full" />
+        </div>
+        <div className="mx-auto flex w-full max-w-md justify-end gap-2">
+          <Skeleton className="inline-block h-10 w-20" />
+          <Skeleton className="inline-block h-10 w-20" />
+        </div>
+      </div>
+    );
   }
 
   if (!product) {
@@ -51,17 +79,13 @@ export default function Product() {
       updatedAt: product.updatedAt,
     });
   };
-
   return (
-    <Layout>
-      <DashboardHeader />
-      <main className="flex justify-center">
-        <Form
-          initialData={product}
-          submitCallback={submitCallback}
-          isSubmitting={editProduct.isLoading}
-        />
-      </main>
-    </Layout>
+    <main className="flex justify-center">
+      <Form
+        initialData={product}
+        submitCallback={submitCallback}
+        isSubmitting={editProduct.isLoading}
+      />
+    </main>
   );
 }

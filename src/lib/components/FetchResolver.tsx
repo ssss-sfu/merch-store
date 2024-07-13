@@ -17,7 +17,6 @@ export default function FetchResolver<TData>({
   isError,
   children,
 }: Props<TData>) {
-  // isLoading = true;
   if (isLoading) {
     return loader ?? <div>Loading...</div>;
   } else if (isError) {
