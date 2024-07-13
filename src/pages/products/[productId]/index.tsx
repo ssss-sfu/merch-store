@@ -17,6 +17,7 @@ import { useToast } from "@/ui/use-toast";
 import { type RouterInputs, api } from "~/utils/api";
 import Image from "next/image";
 import { DisclaimerText } from "@/lib/products/DisclaimerText";
+import { Skeleton } from "~/lib/components/ui/skeleton";
 
 type Size = RouterInputs["order"]["add"]["products"][number]["size"];
 
@@ -53,7 +54,12 @@ function Content() {
   const { toast } = useToast();
 
   if (isLoading) {
-    return <div>Loading...</div>;
+    return (
+      <div className="grid h-[24rem] grid-cols-2 gap-4 px-4">
+        <Skeleton className="h-full w-full" />
+        <Skeleton className="h-full w-full" />
+      </div>
+    );
   }
 
   if (isError) {

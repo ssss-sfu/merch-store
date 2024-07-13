@@ -26,6 +26,7 @@ import { useToast } from "@/ui/use-toast";
 import { useState } from "react";
 import Image from "next/image";
 import { DisclaimerText } from "@/lib/products/DisclaimerText";
+import { Skeleton } from "~/lib/components/ui/skeleton";
 
 type Product = RouterOutputs["product"]["getFromCart"][number];
 
@@ -108,72 +109,70 @@ function Content() {
     .toFixed(2);
 
   return (
-    <Layout>
-      <Header />
-      <main className="px-4">
-        <h2 className="pb-8 text-3xl	font-medium">Your Cart</h2>
-        <section className="flex flex-col-reverse	gap-10 md:flex-row">
-          {cart.length ? (
-            <ul className="flex w-full	flex-col gap-8">
-              {cart.map((cartItem) => {
-                return (
-                  <CartItemComponent
-                    key={cartItem.id}
-                    cart={cartItem}
-                    product={products?.find(
-                      (product) => product.id === cartItem.id,
-                    )}
-                  />
-                );
-              })}
-            </ul>
-          ) : (
-            <p className="w-full text-xl">No items yet</p>
-          )}
-          <div className="md:max-w-[30%]">
-            <h2 className="pb-8 text-xl	font-medium">Total</h2>
-            <p className="pb-4 text-3xl">${totalPrice}</p>
-            <ClientSideDialog
-              open={isModalOpen}
-              onOpenChange={(e) => setIsModalOpen(e)}
-            >
-              <DialogTrigger asChild>
+    <main className="px-4">
+      <h2 className="pb-8 text-3xl	font-medium">Your Cart</h2>
+      <section className="flex flex-col-reverse	gap-10 md:flex-row">
+        {cart.length ? (
+          <ul className="flex w-full	flex-col gap-8">
+            {cart.map((cartItem) => {
+              return (
+                <CartItemComponent
+                  key={
+                    cartItem.size !== undefined
+                      ? cartItem.id + cartItem.size
+                      : cartItem.id
+                  }
+                  cart={cartItem}
+                  product={products?.find(
+                    (product) => product.id === cartItem.id,
+                  )}
+                />
+              );
+            })}
+          </ul>
+        ) : (
+          <p className="w-full text-xl">No items yet</p>
+        )}
+        <div className="md:max-w-[30%]">
+          <h2 className="pb-8 text-xl	font-medium">Total</h2>
+          <p className="pb-4 text-3xl">${totalPrice}</p>
+          <ClientSideDialog
+            open={isModalOpen}
+            onOpenChange={(e) => setIsModalOpen(e)}
+          >
+            <DialogTrigger asChild>
+              <div className="flex flex-col gap-2">
+                <Button disabled={cart.length === 0}>Place Order*</Button>
+                <DisclaimerText />
+              </div>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogTitle>Place Order</DialogTitle>
+              <form className="grid gap-4" onSubmit={placeOrder}>
+                <div className="grid gap-2">
+                  <label htmlFor="name">Name</label>
+                  <FieldValidation error={errors.name}>
+                    <Input id="name" {...register("name")} />
+                  </FieldValidation>
+                </div>
+                <div className="grid gap-2">
+                  <label htmlFor="email">Email</label>
+                  <FieldValidation error={errors.email}>
+                    <Input id="email" {...register("email")} />
+                  </FieldValidation>
+                </div>
                 <div className="flex flex-col gap-2">
-                  <Button disabled={cart.length === 0}>Place Order*</Button>
+                  <Button type="submit" disabled={placeOrderMutation.isLoading}>
+                    Place Order*
+                  </Button>
                   <DisclaimerText />
                 </div>
-              </DialogTrigger>
-              <DialogContent>
-                <DialogTitle>Place Order</DialogTitle>
-                <form className="grid gap-4" onSubmit={placeOrder}>
-                  <div className="grid gap-2">
-                    <label htmlFor="name">Name</label>
-                    <FieldValidation error={errors.name}>
-                      <Input id="name" {...register("name")} />
-                    </FieldValidation>
-                  </div>
-                  <div className="grid gap-2">
-                    <label htmlFor="email">Email</label>
-                    <FieldValidation error={errors.email}>
-                      <Input id="email" {...register("email")} />
-                    </FieldValidation>
-                  </div>
-                  <div className="flex flex-col gap-2">
-                    <Button
-                      type="submit"
-                      disabled={placeOrderMutation.isLoading}
-                    >
-                      Place Order*
-                    </Button>
-                    <DisclaimerText />
-                  </div>
-                </form>
-              </DialogContent>
-            </ClientSideDialog>
-          </div>
-        </section>
-      </main>
-    </Layout>
+              </form>
+            </DialogContent>
+          </ClientSideDialog>
+        </div>
+      </section>
+    </main>
   );
 }
 
@@ -190,14 +189,18 @@ function CartItemComponent({ cart, product }: CartItemComponentProps) {
   const removeFromCart = useSetAtom(removeFromCartAtom);
 
   if (!product) {
-    return <div>Loading...</div>;
+    return (
+      <li>
+        <Skeleton className="h-[11rem] w-full" />
+      </li>
+    );
   }
 
   if (product.type === "not-exist") {
     return (
-      <div>
+      <li>
         <p>This product doesn&#39;t exist</p>
-      </div>
+      </li>
     );
   }
 
@@ -226,7 +229,7 @@ function CartItemComponent({ cart, product }: CartItemComponentProps) {
               value={cart.quantity}
             />
           </div>
-          {!!cart.size && <li className="text-sm">Size: {cart.size}</li>}
+          {!!cart.size && <p className="text-sm">Size: {cart.size}</p>}
           <p className="text-sm">
             Total Price: <span>${(cart.price * cart.quantity).toFixed(2)}</span>
           </p>
