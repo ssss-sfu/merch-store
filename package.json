@@ -9,16 +9,16 @@
   },
   "scripts": {
     "build": "next build",
-    "dev": "next dev",
-    "postinstall": "prisma generate",
-    "format:write": "prettier --write .",
-    "format:check": "prettier --check .",
-    "lint": "next lint",
-    "start": "next start",
     "db-seed": "prisma db seed",
+    "dev": "sst dev next dev",
+    "format:check": "prettier --check .",
+    "format:write": "prettier --write .",
+    "lint": "next lint",
+    "postinstall": "prisma generate",
+    "precommit": "lint-staged",
     "prepare": "husky",
     "prettier": "prettier --ignore-path .gitignore \"**/*.+(js|json|ts|tsx)\"",
-    "precommit": "lint-staged"
+    "start": "next start"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"
@@ -51,6 +51,7 @@
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-hook-form": "^7.51.5",
+    "sst": "ion",
     "superjson": "2.2.1",
     "tailwind-merge": "^1.14.0",
     "tailwindcss-animate": "^1.0.7",

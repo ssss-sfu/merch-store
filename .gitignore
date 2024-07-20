@@ -43,3 +43,9 @@ yarn-error.log*
 
 # VSCode settings
 .vscode
+
+# sst
+.sst
+
+# open-next
+.open-next
