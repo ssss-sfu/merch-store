@@ -28,20 +28,20 @@ export const orderRouter = createTRPCRouter({
     .input(getAllOrdersSchema)
     .query(async ({ ctx, input }) => {
       const orders = await ctx.prisma.$queryRaw<Order[]>`
-        SELECT id, name, email, totals.total, counts.count, processingState, createdAt
+        SELECT id, name, email, totals.total, counts.count, "processingState", "createdAt"
         FROM orders, (
-          SELECT orderId, SUM(price / 100 * quantity) as total
+          SELECT "orderId", SUM(price / 100 * quantity) as total
           FROM order_items
-          GROUP BY orderId
+          GROUP BY "orderId"
         ) as totals, (
-          SELECT orderId, SUM(quantity) as count
+          SELECT "orderId", SUM(quantity) as count
           FROM order_items
-          GROUP BY orderId
+          GROUP BY "orderId"
         ) as counts
-        WHERE orders.id = totals.orderId
-        AND orders.id = counts.orderId
-        AND processingState = ${input.processingState}
-        ORDER BY createdAt DESC
+        WHERE orders.id = totals."orderId"
+        AND orders.id = counts."orderId"
+        AND "processingState" = ${input.processingState}::"ProcessingState"
+        ORDER BY "createdAt" DESC
       `;
 
       return orders;
@@ -59,11 +59,13 @@ export const orderRouter = createTRPCRouter({
         },
       },
     });
+    console.log(order);
 
     const _total = await getOrderTotal(input, ctx);
     const total = _total?.[0]?.total;
+    console.log(total);
 
-    if (!total || !order) {
+    if (total === undefined || !order) {
       return null;
     }
 
@@ -193,8 +195,8 @@ async function getOrderTotal(orderId: string, ctx: Context) {
   const total = await ctx.prisma.$queryRaw<{ total: number }[]>`
     SELECT SUM(price / 100 * quantity) as total
     FROM order_items
-    WHERE orderId = ${orderId}
-    GROUP BY orderId
+    WHERE "orderId" = ${orderId}
+    GROUP BY "orderId"
   `;
 
   return total;
