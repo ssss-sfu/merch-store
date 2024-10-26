@@ -8,10 +8,9 @@ import { Prisma } from "@prisma/client";
 import { TRPCError } from "@trpc/server";
 import {
   transformPriceToModel,
-  transformPriceToView,
   transformProductPriceToView,
   transformProductsPriceToView,
-} from "~/server/price-transformer";
+} from "@/lib/utils/price-transformer";
 
 export const productManagementRouter = createTRPCRouter({
   add: protectedProcedure
