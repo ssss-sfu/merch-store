@@ -5,7 +5,7 @@ import {
   transformProductsPriceToView,
   transformPriceToView,
   transformPriceToModel,
-} from "~/server/price-transformer";
+} from "@/lib/utils/price-transformer";
 import { cartSchema } from "~/schemas/order";
 
 export const productRouter = createTRPCRouter({
