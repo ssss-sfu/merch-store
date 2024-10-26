@@ -1,15 +1,13 @@
-version: "3.3"
-
 services:
   db:
-    image: mysql:8.0.30
+    image: postgres:17
     environment:
-      - MYSQL_DATABASE=merch
-      - MYSQL_ROOT_PASSWORD=test123
+      - POSTGRES_DB=merch
+      - POSTGRES_PASSWORD=test123
     volumes:
-      - merch-db:/var/lib/mysql
+      - merch-db:/var/lib/postgresql/data
     ports:
-      - "3306:3306"
+      - "5432:5432"
     networks:
       - merch
 
