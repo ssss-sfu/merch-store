@@ -26,6 +26,8 @@ The implementation for the store is done all in the frontend in the file `cartSt
 
 ## Admin Dashboard
 
+The dashboard can be access through `/dashboard` in the url bar
+
 ### Changing the admin credentials
 
 There is one admin user that will be added when the database is seeded initially. To change the credentails, update the
