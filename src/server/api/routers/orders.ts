@@ -59,11 +59,9 @@ export const orderRouter = createTRPCRouter({
         },
       },
     });
-    console.log(order);
 
     const _total = await getOrderTotal(input, ctx);
     const total = _total?.[0]?.total;
-    console.log(total);
 
     if (total === undefined || !order) {
       return null;
