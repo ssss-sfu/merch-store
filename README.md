@@ -15,7 +15,7 @@ npx prisma db push
 npm run db-seed
 ```
 
-Open another terminal window and run ``npm run dev` to start the dev server.
+Open another terminal window and run `npm run dev` to start the dev server.
 
 ## Cart Implementation
 
