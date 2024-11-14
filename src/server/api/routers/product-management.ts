@@ -41,6 +41,7 @@ export const productManagementRouter = createTRPCRouter({
               return {
                 productId: product.id,
                 productSizeId: size,
+                quantity: input.quantity[size],
               };
             }),
         });
@@ -111,6 +112,7 @@ export const productManagementRouter = createTRPCRouter({
                 return {
                   productId: product.id,
                   productSizeId: size,
+                  quantity: input.quantity[size],
                 };
               }),
           });
@@ -149,14 +151,22 @@ export const productManagementRouter = createTRPCRouter({
     if (product) {
       return transformProductPriceToView({
         ...product,
-        availableSizes: product.availableSizes.map(({ productSize }) => {
-          return {
-            size: productSize.size,
-          };
-        }),
+        availableSizes: product.availableSizes.map(
+          ({
+            productSize,
+            quantity,
+          }: {
+            productSize: { size: string };
+            quantity: number;
+          }) => {
+            return {
+              size: productSize.size,
+              quantity: quantity,
+            };
+          },
+        ),
       });
     }
-
     return null;
   }),
   archive: protectedProcedure

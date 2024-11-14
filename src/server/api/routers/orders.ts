@@ -177,6 +177,21 @@ export const orderRouter = createTRPCRouter({
 
       const _total = await getOrderTotal(input.id, ctx);
       const total = _total?.[0]?.total;
+      for (const item of order.orderedItems) {
+        await ctx.prisma.availableSize.updateMany({
+          where: {
+            productId: item.productId,
+            productSizeId: item.size ?? undefined,
+          },
+          data: {
+            quantity: {
+              [input.processingState === "processing"
+                ? "increment"
+                : "decrement"]: item.quantity,
+            },
+          },
+        });
+      }
 
       if (!total || !order) {
         throw new TRPCError({

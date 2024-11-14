@@ -34,7 +34,6 @@ export function Form({ initialData, submitCallback, isSubmitting }: FormProps) {
     api.productManagement.getAllSizes.useQuery(undefined, {
       refetchOnWindowFocus: false,
     });
-
   const {
     register,
     handleSubmit,
@@ -48,7 +47,16 @@ export function Form({ initialData, submitCallback, isSubmitting }: FormProps) {
       name: initialData?.name ?? "",
       imageLink: initialData?.imageLink ?? "",
       price: initialData?.price ?? 0.0,
-      sizes: convertSizesToObj(initialData?.availableSizes, availableSizes),
+      sizes: convertSizesToObj(
+        initialData?.availableSizes,
+        availableSizes,
+        "boolean",
+      ),
+      quantity: convertSizesToObj(
+        initialData?.availableSizes,
+        availableSizes,
+        "number",
+      ),
       about: initialData?.aboutProducts ?? [],
       archived: initialData?.archived ?? false,
     },
@@ -159,6 +167,36 @@ export function Form({ initialData, submitCallback, isSubmitting }: FormProps) {
           );
         })}
       </div>
+
+      <h3>Stock Sizes</h3>
+      <div className="grid grid-cols-3 gap-2">
+        {Object.keys(sizes).map((size) => {
+          if (sizes[size as Size]) {
+            return (
+              <div key={size} className="flex items-center gap-1">
+                <label htmlFor={size}>{size}</label>
+                <FieldValidation error={errors.sizes?.[size as Size]}>
+                  <Input
+                    className="w-[inherit]"
+                    type="number"
+                    placeholder="Quantity"
+                    step={1}
+                    min={0}
+                    {...register(`quantity.${size as Size}`, {
+                      valueAsNumber: true,
+                    })}
+                    defaultValue={
+                      initialData?.availableSizes.find((s) => s.size === size)
+                        ?.quantity ?? 10
+                    }
+                  />
+                </FieldValidation>
+              </div>
+            );
+          }
+          return null;
+        })}
+      </div>
       <div className="grid gap-2">
         <h2>About</h2>
         <div className="grid gap-4">
@@ -199,6 +237,7 @@ export function Form({ initialData, submitCallback, isSubmitting }: FormProps) {
         <Button type="submit" disabled={isSubmitting}>
           {initialData ? "Edit Product" : "Add Product"}
         </Button>
+        <div onClick={() => console.log(watch(), sizes)}>Test</div>
       </div>
     </form>
   );
@@ -209,15 +248,23 @@ function convertSizesToObj(
     | NonNullable<RouterOutputs["productManagement"]["get"]>["availableSizes"]
     | undefined,
   availableSizes: RouterOutputs["productManagement"]["getAllSizes"] | undefined,
-): Record<string, boolean> {
+  returnType: "boolean" | "number",
+): Record<string, boolean | number> {
   if (!availableSizes || !selectedSizes) {
     return {};
   }
 
-  const sizes: Partial<Record<Size, boolean>> = {};
+  const sizes: Partial<Record<Size, boolean | number>> = {};
   for (const size of availableSizes) {
     const has = selectedSizes.find((s) => s.size === size.size);
-    has ? (sizes[size.size] = true) : (sizes[size.size] = false);
+    switch (returnType) {
+      case "boolean":
+        sizes[size.size] = !!has;
+        break;
+      case "number":
+        sizes[size.size] = has ? has.quantity : 10;
+        break;
+    }
   }
   return sizes;
 }
