@@ -66,3 +66,8 @@ export const removeFromCartAtom = atom(
 export const clearCartAtom = atom(null, (_, set) => {
   set(cartAtom, []);
 });
+
+export const cartCountAtom = atom((get) => {
+  const cart = get(cartAtom);
+  return cart.reduce((count, item) => count + item.quantity, 0);
+});
