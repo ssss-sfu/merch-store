@@ -7,7 +7,7 @@ import {
 } from "../trpc";
 import { addOrderSchema, getAllOrdersSchema } from "~/schemas/order";
 import { TRPCError } from "@trpc/server";
-import { type ProcessingState } from "@prisma/client";
+import { type ProcessingState, type Size } from "@prisma/client";
 import {
   transformPriceToModel,
   transformProductsPriceToView,
@@ -54,7 +54,25 @@ export const orderRouter = createTRPCRouter({
       include: {
         orderedItems: {
           include: {
-            product: true,
+            product: {
+              include: {
+                availableSizes: {
+                  where: {
+                    productSize: {
+                      size: {
+                        in: (
+                          await ctx.prisma.$queryRaw<{ size: string }[]>`
+                          SELECT size
+                          FROM order_items
+                          WHERE "orderId" = ${input}
+                        `
+                        ).map((row) => row.size as Size),
+                      },
+                    },
+                  },
+                },
+              },
+            },
           },
         },
       },
@@ -159,24 +177,30 @@ export const orderRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      const order = await ctx.prisma.order.update({
+      const order = await ctx.prisma.order.findUnique({
         where: {
           id: input.id,
-        },
-        data: {
-          processingState: input.processingState,
         },
         include: {
           orderedItems: {
             include: {
-              product: true,
+              product: {
+                include: {
+                  availableSizes: true,
+                },
+              },
             },
           },
         },
       });
 
-      const _total = await getOrderTotal(input.id, ctx);
-      const total = _total?.[0]?.total;
+      if (!order) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Order not found",
+        });
+      }
+
       for (const item of order.orderedItems) {
         await ctx.prisma.availableSize.updateMany({
           where: {
@@ -193,14 +217,37 @@ export const orderRouter = createTRPCRouter({
         });
       }
 
-      if (!total || !order) {
+      const updatedOrder = await ctx.prisma.order.update({
+        where: {
+          id: input.id,
+        },
+        data: {
+          processingState: input.processingState,
+        },
+        include: {
+          orderedItems: {
+            include: {
+              product: {
+                include: {
+                  availableSizes: true,
+                },
+              },
+            },
+          },
+        },
+      });
+
+      const _total = await getOrderTotal(input.id, ctx);
+      const total = _total?.[0]?.total;
+
+      if (!total || !updatedOrder) {
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
           message: "Could not update processing state",
         });
       }
 
-      return { ...order, total };
+      return { ...updatedOrder, total };
     }),
 });
 
