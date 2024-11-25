@@ -237,7 +237,6 @@ export function Form({ initialData, submitCallback, isSubmitting }: FormProps) {
         <Button type="submit" disabled={isSubmitting}>
           {initialData ? "Edit Product" : "Add Product"}
         </Button>
-        <div onClick={() => console.log(watch(), sizes)}>Test</div>
       </div>
     </form>
   );
