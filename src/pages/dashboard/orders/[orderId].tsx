@@ -28,7 +28,6 @@ import {
   SelectValue,
 } from "@/ui/select";
 import { type ProcessingState } from "@prisma/client";
-
 export { getServerSideProps } from "~/utils/serverSideAuth";
 
 export default function OrderId() {
@@ -47,7 +46,7 @@ export default function OrderId() {
         header: "Size",
       }),
       columnHelper.accessor("quantity", {
-        header: "Quantity",
+        header: "Quantity (In Stock)",
       }),
       columnHelper.accessor("price", {
         header: "Price",
@@ -176,6 +175,19 @@ function DataTable<TData, TValue>({
                 {row.getVisibleCells().map((cell) => (
                   <TableCell key={cell.id}>
                     {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                    {cell.column.id === "quantity" && (
+                      <span>
+                        (
+                        {(
+                          data[row.index] as OrderedItem
+                        ).product.availableSizes?.find(
+                          (productSize) =>
+                            productSize.productSizeId ===
+                            (data[row.index] as OrderedItem).size,
+                        )?.quantity ?? "0"}
+                        )
+                      </span>
+                    )}
                   </TableCell>
                 ))}
               </TableRow>

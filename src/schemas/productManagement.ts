@@ -25,6 +25,10 @@ export const addProductSchema = z.object({
     z.custom<Size>((val: string) => Object.keys(Size).includes(val)),
     z.boolean(),
   ),
+  quantity: z.record(
+    z.custom<Size>((val: string) => Object.keys(Size).includes(val)),
+    z.number(),
+  ),
 });
 
 export type AddProduct = z.infer<typeof addProductSchema>;
@@ -54,6 +58,10 @@ export const formSchema = z.object({
   sizes: z.record(
     z.custom<Size>((val: string) => Object.keys(Size).includes(val)),
     z.boolean(),
+  ),
+  quantity: z.record(
+    z.custom<Size>((val: string) => Object.keys(Size).includes(val)),
+    z.number(),
   ),
   about: z
     .object({
