@@ -19,7 +19,7 @@ const config = {
     defaultLocale: "en",
   },
   images: {
-    domains: ["drive.google.com", "lh3.googleusercontent.com"],
+    domains: ["drive.google.com", "lh3.googleusercontent.com", "utfs.io"],
   },
   async redirects() {
     return [
