@@ -46,7 +46,7 @@ function Product({ id, name, price, imageLink }: Products[number]) {
       key={id}
       className="grid aspect-[3.5/4] w-full grid-rows-[1fr_auto_auto] flex-col items-center gap-3 text-center"
     >
-      <div className="relative">
+      <div className="relative h-full">
         <Image
           priority={true}
           fill
