@@ -37,7 +37,7 @@ export default function Orders() {
                   key={product.id}
                   className="grid aspect-[3.5/4] grid-rows-[1fr_auto_auto_auto] items-center gap-2 rounded border-2 border-accent p-4"
                 >
-                  <div className="relative">
+                  <div className="relative h-full">
                     <Image
                       priority={true}
                       fill

@@ -20,6 +20,8 @@ import {
 import { useEffect } from "react";
 import { formSchema, type FormSchema } from "~/schemas/productManagement";
 import { type Size } from "@prisma/client";
+import { UploadButton } from "../utils/uploadthing";
+import { twMerge } from "tailwind-merge";
 
 export type FormProps = {
   initialData: RouterOutputs["productManagement"]["get"];
@@ -147,9 +149,26 @@ export function Form({ initialData, submitCallback, isSubmitting }: FormProps) {
       </div>
       <div className="grid gap-2">
         <label htmlFor="link">Image Link</label>
-        <FieldValidation error={errors.imageLink}>
-          <Input {...register("imageLink")} id="link" />
-        </FieldValidation>
+        <div className="flex gap-2">
+          <FieldValidation error={errors.imageLink}>
+            <Input {...register("imageLink")} id="link" />
+          </FieldValidation>
+          <UploadButton
+            className="ut-button:bg-primary"
+            config={{ cn: twMerge }}
+            endpoint="imageUploader"
+            onClientUploadComplete={(res) => {
+              {
+                setValue("imageLink", res[0]?.url ?? "");
+              }
+            }}
+            onUploadError={(error: Error) => {
+              alert(
+                `error, please try again, or upload an image ${error.message}`,
+              );
+            }}
+          />
+        </div>
       </div>
       <h3>Sizes</h3>
       <div className="grid grid-cols-3 gap-2">
