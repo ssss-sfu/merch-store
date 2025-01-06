@@ -41,7 +41,7 @@
     "@trpc/react-query": "^10.26.0",
     "@trpc/server": "^10.26.0",
     "@types/uuid": "^9.0.8",
-    "@uploadthing/react": "^7.1.1",
+    "@uploadthing/react": "^7.1.5",
     "bcrypt": "^5.1.0",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",
@@ -55,7 +55,7 @@
     "superjson": "2.2.1",
     "tailwind-merge": "^2.5.4",
     "tailwindcss-animate": "^1.0.7",
-    "uploadthing": "^7.3.0",
+    "uploadthing": "^7.4.4",
     "uuid": "^9.0.1",
     "zod": "^3.22.4"
   },
