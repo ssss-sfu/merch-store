@@ -6,6 +6,8 @@ This is a [T3 Stack](https://create.t3.gg/) project bootstrapped with `create-t3
 
 Create a .env file with the contents of .env.example.
 
+Now you'll need to create an [uploadthing](https://uploadthing.com) account, create a project, and generate a key. Replace the value of UPLOADTHING_TOKEN in the .env with the generated key.
+
 Open a terminal window and run `docker compose up` to start the db container.
 
 Sync the prisma schema with db and seed the database (Only for the first time):

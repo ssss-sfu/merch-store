@@ -92,13 +92,13 @@ function Content() {
   };
 
   return (
-    <main className="flex flex-col justify-center gap-6 px-4 md:flex-row md:gap-14">
+    <main className="flex flex-col gap-6 md:flex-row md:justify-center md:gap-14">
       <div className="w-full">
         <Image
           priority={true}
           width={500}
           height={500}
-          className="aspect-square w-full overflow-hidden rounded-3xl	object-cover	"
+          className="aspect-square w-full overflow-hidden rounded-xl object-cover"
           src={product.imageLink}
           alt={product.name}
         />
