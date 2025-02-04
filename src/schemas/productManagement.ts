@@ -3,7 +3,13 @@ import { z } from "zod";
 
 export const addProductSchema = z.object({
   name: z.string().min(1),
-  imageLink: z.string().url(),
+  images: z
+    .array(
+      z.object({
+        url: z.string().url("Invalid URL"),
+      }),
+    )
+    .min(1, "At least one image is required"),
   price: z
     .string()
     .min(1)
@@ -43,7 +49,14 @@ export type EditProduct = z.infer<typeof editProductSchema>;
 
 export const formSchema = z.object({
   name: z.string().min(1),
-  imageLink: z.string().url(),
+  images: z
+    .array(
+      z.object({
+        url: z.string().url("Invalid URL"),
+        id: z.string(),
+      }),
+    )
+    .min(1, "At least one image is required"),
   price: z
     .string()
     .min(1)

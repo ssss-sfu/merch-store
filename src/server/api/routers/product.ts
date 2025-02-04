@@ -15,8 +15,8 @@ export const productRouter = createTRPCRouter({
         id: true,
         name: true,
         price: true,
-        imageLink: true,
         availableSizes: true,
+        images: true,
       },
       where: { archived: false },
     });
@@ -40,6 +40,7 @@ export const productRouter = createTRPCRouter({
             productSize: true,
           },
         },
+        images: true,
       },
     });
 
@@ -55,6 +56,7 @@ export const productRouter = createTRPCRouter({
               productSize: true,
             },
           },
+          images: true,
         },
         where: {
           OR: input.map((cartItem) => ({ id: cartItem.id })),
@@ -68,7 +70,6 @@ export const productRouter = createTRPCRouter({
             type: "archived" as const,
             id: targetProduct.id,
             name: targetProduct.name,
-            imageLink: targetProduct.imageLink,
           };
         }
 
@@ -118,7 +119,7 @@ export const productRouter = createTRPCRouter({
         return {
           type: "normal" as const,
           id: targetProduct.id,
-          imageLink: targetProduct.imageLink,
+          images: targetProduct.images,
           name: targetProduct.name,
           errors,
         };

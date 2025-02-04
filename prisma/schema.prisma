@@ -87,12 +87,12 @@ model ProductSize {
 }
 
 model AvailableSize {
-  id              String      @id @default(cuid())
-  productId       String
-  product         Product     @relation(fields: [productId], references: [id])
-  productSizeId   Size
-  productSize     ProductSize @relation(fields: [productSizeId], references: [size])
-  quantity Int         @default(10)
+  id            String      @id @default(cuid())
+  productId     String
+  product       Product     @relation(fields: [productId], references: [id])
+  productSizeId Size
+  productSize   ProductSize @relation(fields: [productSizeId], references: [size])
+  quantity      Int         @default(10)
 
   @@index([productId])
   @@index([productSizeId])
@@ -101,7 +101,7 @@ model AvailableSize {
 
 model Product {
   id        String   @id @default(cuid())
-  imageLink String   @db.VarChar(2048)
+  images    Image[]
   name      String
   price     Int
   createdAt DateTime @default(now())
@@ -113,6 +113,17 @@ model Product {
   availableSizes AvailableSize[]
 
   @@map("products")
+}
+
+model Image {
+  id        String  @id @default(cuid())
+  url       String  @db.VarChar(2048)
+  productId String
+  product   Product @relation(fields: [productId], references: [id])
+  order    Int     @default(0)
+
+  @@index([productId])
+  @@map("images")
 }
 
 model AboutProduct {
