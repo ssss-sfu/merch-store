@@ -6,6 +6,7 @@ import type { FieldErrors, FieldError } from "react-hook-form";
 import Image from "next/image";
 import React, { useState } from "react";
 import { Skeleton } from "@/ui/skeleton";
+import { useToast } from "@/lib/components/ui/use-toast";
 
 export interface ImageField {
   key: string;
@@ -29,9 +30,9 @@ export default function ImageInput({
   removeImage,
   setImageFields,
 }: ImageInputProps) {
+  const { toast } = useToast();
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
 
-  // Handle drag start for desktop
   const handleDragStart = (
     e: React.DragEvent<HTMLButtonElement>,
     index: number,
@@ -39,7 +40,6 @@ export default function ImageInput({
     e.dataTransfer.setData("text/plain", index.toString());
   };
 
-  // Handle touch start for mobile
   const handleTouchStart = (
     e: React.TouchEvent<HTMLButtonElement>,
     index: number,
@@ -47,14 +47,12 @@ export default function ImageInput({
     setDraggedIndex(index);
   };
 
-  // Handle drop for desktop
   const handleDrop = (e: React.DragEvent<HTMLDivElement>, index: number) => {
     e.preventDefault();
     const draggedIndex = parseInt(e.dataTransfer.getData("text/plain"), 10);
     moveImage(draggedIndex, index);
   };
 
-  // Handle touch end for mobile
   const handleTouchEnd = (
     e: React.TouchEvent<HTMLDivElement>,
     index: number,
@@ -65,7 +63,6 @@ export default function ImageInput({
     setDraggedIndex(null);
   };
 
-  // Move image logic
   const moveImage = (fromIndex: number, toIndex: number) => {
     const newImageFields = [...imageFields];
     const [movedImage] = newImageFields.splice(fromIndex, 1);
@@ -75,13 +72,21 @@ export default function ImageInput({
     setImageFields(newImageFields);
   };
 
-  // Handle input change
   const handleChange = (index: number, value: string) => {
     const newImageFields = [...imageFields];
     if (newImageFields[index]) {
       newImageFields[index].description = value;
       setImageFields(newImageFields);
     }
+  };
+
+  const handleRemoveImage = (index: number) => {
+    removeImage(index);
+    toast({
+      title: "Image Removed",
+      description: `The image has been removed.`,
+      variant: "default",
+    });
   };
 
   return (
@@ -135,7 +140,7 @@ export default function ImageInput({
             <Button
               type="button"
               variant="ghost"
-              onClick={() => removeImage(index)}
+              onClick={() => handleRemoveImage(index)}
             >
               <Minus />
             </Button>
