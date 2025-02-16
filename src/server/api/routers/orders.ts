@@ -10,6 +10,7 @@ import { TRPCError } from "@trpc/server";
 import { type ProcessingState, type Size } from "@prisma/client";
 import {
   transformPriceToModel,
+  transformPriceToView,
   transformProductsPriceToView,
 } from "@/lib/utils/price-transformer";
 
@@ -30,7 +31,7 @@ export const orderRouter = createTRPCRouter({
       const orders = await ctx.prisma.$queryRaw<Order[]>`
         SELECT id, name, email, totals.total, counts.count, "processingState", "createdAt"
         FROM orders, (
-          SELECT "orderId", SUM(price / 100 * quantity) as total
+          SELECT "orderId", SUM(price)::INT as total
           FROM order_items
           GROUP BY "orderId"
         ) as totals, (
@@ -43,6 +44,10 @@ export const orderRouter = createTRPCRouter({
         AND "processingState" = ${input.processingState}::"ProcessingState"
         ORDER BY "createdAt" DESC
       `;
+
+      orders.forEach((order) => {
+        order.total = transformPriceToView(order.total);
+      });
 
       return orders;
     }),
