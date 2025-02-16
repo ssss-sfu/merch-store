@@ -119,6 +119,7 @@ model Image {
   id        String  @id @default(cuid())
   url       String  @db.VarChar(2048)
   productId String
+  description String @db.Text
   product   Product @relation(fields: [productId], references: [id])
   order    Int     @default(0)
 

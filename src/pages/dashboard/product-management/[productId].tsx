@@ -48,8 +48,8 @@ function Content() {
 
   if (isLoading) {
     return (
-      <div className="mx-auto w-full max-w-md space-y-4 p-4">
-        <div className="mx-auto flex  justify-between">
+      <div className="mx-auto w-full max-w-lg space-y-4 p-4">
+        <div className="mx-auto flex justify-between">
           <Skeleton className="inline-block h-10 w-20" />
           <Skeleton className="inline-block h-10 w-20" />
         </div>
@@ -60,7 +60,7 @@ function Content() {
           <Skeleton className="h-10 w-full" />
           <Skeleton className="h-10 w-full" />
         </div>
-        <div className="mx-auto flex w-full max-w-md justify-end gap-2">
+        <div className="mx-auto flex w-full max-w-lg justify-end gap-2">
           <Skeleton className="inline-block h-10 w-20" />
           <Skeleton className="inline-block h-10 w-20" />
         </div>

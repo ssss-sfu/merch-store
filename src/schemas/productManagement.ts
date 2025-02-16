@@ -1,15 +1,14 @@
 import { Size } from "@prisma/client";
 import { z } from "zod";
 
+const imageSchema = z.object({
+  url: z.string().url(),
+  description: z.string().optional(),
+});
+
 export const addProductSchema = z.object({
   name: z.string().min(1),
-  images: z
-    .array(
-      z.object({
-        url: z.string().url("Invalid URL"),
-      }),
-    )
-    .min(1, "At least one image is required"),
+  images: z.array(imageSchema).min(1, "At least one image is required"),
   price: z
     .string()
     .min(1)
@@ -43,6 +42,7 @@ export const editProductSchema = addProductSchema.extend({
   id: z.string(),
   updatedAt: z.date(),
   archived: z.boolean(),
+  images: z.array(imageSchema),
 });
 
 export type EditProduct = z.infer<typeof editProductSchema>;
@@ -54,6 +54,7 @@ export const formSchema = z.object({
       z.object({
         url: z.string().url("Invalid URL"),
         id: z.string(),
+        description: z.string().min(0),
       }),
     )
     .min(1, "At least one image is required"),

@@ -30,6 +30,7 @@ export const productManagementRouter = createTRPCRouter({
               create: input.images.map((image, index) => ({
                 url: image.url,
                 order: index,
+                description: image.description ?? "",
               })),
             },
           },
@@ -84,6 +85,7 @@ export const productManagementRouter = createTRPCRouter({
                 create: input.images.map((image, index) => ({
                   url: image.url,
                   order: index,
+                  description: image.description ?? "",
                 })),
               },
               archived: input.archived,
