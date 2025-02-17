@@ -212,7 +212,7 @@ function CartItemComponent({ cart, product }: CartItemComponentProps) {
           width={500}
           height={500}
           className="aspect-square w-[30%] max-w-[180px] overflow-hidden rounded-xl object-cover"
-          src={product.imageLink}
+          src={product.images?.[0]?.url ?? ""}
           alt={product.name}
         />
         <div>

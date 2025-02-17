@@ -21,15 +21,20 @@ export const productManagementRouter = createTRPCRouter({
           data: {
             name: input.name,
             price: input.price * 100,
-            imageLink: input.imageLink,
             aboutProducts: {
               createMany: {
                 data: input.about,
               },
             },
+            images: {
+              create: input.images.map((image, index) => ({
+                url: image.url,
+                order: index,
+                description: image.description ?? "",
+              })),
+            },
           },
         });
-
         await prisma.availableSize.createMany({
           data: (
             Object.entries(input.sizes) as Array<
@@ -45,6 +50,8 @@ export const productManagementRouter = createTRPCRouter({
               };
             }),
         });
+
+        return product;
       });
 
       return data;
@@ -73,7 +80,14 @@ export const productManagementRouter = createTRPCRouter({
             data: {
               name: input.name,
               price: transformPriceToModel(input.price),
-              imageLink: input.imageLink,
+              images: {
+                deleteMany: {},
+                create: input.images.map((image, index) => ({
+                  url: image.url,
+                  order: index,
+                  description: image.description ?? "",
+                })),
+              },
               archived: input.archived,
             },
           });
@@ -130,7 +144,11 @@ export const productManagementRouter = createTRPCRouter({
     return sizes;
   }),
   getAll: protectedProcedure.query(async ({ ctx }) => {
-    const products = await ctx.prisma.product.findMany();
+    const products = await ctx.prisma.product.findMany({
+      include: {
+        images: {},
+      },
+    });
     return transformProductsPriceToView(products);
   }),
   get: protectedProcedure.input(z.string()).query(async ({ ctx, input }) => {
@@ -145,6 +163,7 @@ export const productManagementRouter = createTRPCRouter({
             productSize: true,
           },
         },
+        images: true,
       },
     });
 

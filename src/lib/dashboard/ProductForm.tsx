@@ -22,6 +22,8 @@ import { formSchema, type FormSchema } from "~/schemas/productManagement";
 import { type Size } from "@prisma/client";
 import { UploadButton } from "../utils/uploadthing";
 import { twMerge } from "tailwind-merge";
+import ImageInput from "./ImageInput";
+import type { ImageField } from "./ImageInput";
 
 export type FormProps = {
   initialData: RouterOutputs["productManagement"]["get"];
@@ -47,7 +49,7 @@ export function Form({ initialData, submitCallback, isSubmitting }: FormProps) {
   } = useForm<FormSchema>({
     values: {
       name: initialData?.name ?? "",
-      imageLink: initialData?.imageLink ?? "",
+      images: initialData?.images ?? ([] as ImageField[]),
       price: initialData?.price ?? 0.0,
       sizes: convertSizesToObj(
         initialData?.availableSizes,
@@ -68,14 +70,28 @@ export function Form({ initialData, submitCallback, isSubmitting }: FormProps) {
   const archived = watch("archived");
   const sizes = watch("sizes");
 
-  const { fields, append, remove } = useFieldArray({
+  const {
+    fields: aboutFields,
+    append: appendAbout,
+    remove: removeAbout,
+  } = useFieldArray({
     control,
     name: "about",
     keyName: "key",
   });
 
-  const addField = () => {
-    append({ id: uuidv4(), description: "" });
+  const {
+    fields: imageFields,
+    append: appendImage,
+    remove: removeImage,
+  } = useFieldArray({
+    control,
+    name: "images",
+    keyName: "key",
+  });
+
+  const addAboutField = () => {
+    appendAbout({ id: uuidv4(), description: "" });
   };
 
   const router = useRouter();
@@ -90,6 +106,7 @@ export function Form({ initialData, submitCallback, isSubmitting }: FormProps) {
     if (checkedState === "indeterminate") return;
     setValue(`sizes.${size}`, checkedState);
   };
+
   if (allSizesIsLoading) {
     return <div>Loading...</div>;
   }
@@ -100,11 +117,8 @@ export function Form({ initialData, submitCallback, isSubmitting }: FormProps) {
 
   return (
     <form
-      className="flex w-full max-w-md flex-col gap-4"
-      onSubmit={async (e) => {
-        e.preventDefault();
-        await handleSubmit((data) => submitCallback(data))();
-      }}
+      className="flex w-full max-w-lg flex-col gap-4"
+      onSubmit={handleSubmit((data) => submitCallback(data))}
     >
       <div className="flex items-center justify-between">
         <h2 className="self-start">
@@ -148,19 +162,30 @@ export function Form({ initialData, submitCallback, isSubmitting }: FormProps) {
         </FieldValidation>
       </div>
       <div className="grid gap-2">
-        <label htmlFor="link">Image Link</label>
-        <div className="flex gap-2">
-          <FieldValidation error={errors.imageLink}>
-            <Input {...register("imageLink")} id="link" />
-          </FieldValidation>
+        <label htmlFor="images">Images</label>
+        <div className="grid gap-2">
+          <ImageInput
+            imageFields={imageFields}
+            errors={errors}
+            removeImage={removeImage}
+            setImageFields={(fields: ImageField[]) => {
+              const updatedFields = fields.map((field) => ({
+                id: field.id,
+                url: field.url,
+                description: field.description,
+              }));
+              setValue("images", updatedFields);
+            }}
+          />
           <UploadButton
-            className="ut-button:bg-primary"
+            className="ut-button:h-10 ut-button:w-auto ut-button:bg-primary ut-button:px-4 ut-button:py-2 ut-button:text-sm ut-button:hover:bg-primary/90"
             config={{ cn: twMerge }}
+            content={{ button: "Upload Image" }}
             endpoint="imageUploader"
             onClientUploadComplete={(res) => {
-              {
-                setValue("imageLink", res[0]?.url ?? "");
-              }
+              res.forEach((file) => {
+                appendImage({ id: uuidv4(), url: file.url, description: "" });
+              });
             }}
             onUploadError={(error: Error) => {
               alert(
@@ -219,7 +244,7 @@ export function Form({ initialData, submitCallback, isSubmitting }: FormProps) {
       <div className="grid gap-2">
         <h2>About</h2>
         <div className="grid gap-4">
-          {fields.map((field, index) => {
+          {aboutFields.map((field, index) => {
             return (
               <div key={field.id} className="flex items-center gap-2">
                 <FieldValidation error={errors.about?.[index]?.description}>
@@ -229,7 +254,7 @@ export function Form({ initialData, submitCallback, isSubmitting }: FormProps) {
                     {...register(`about.${index}.description`)}
                   />
                 </FieldValidation>
-                <Button variant="ghost" onClick={() => remove(index)}>
+                <Button variant="ghost" onClick={() => removeAbout(index)}>
                   <Minus />
                 </Button>
               </div>
@@ -238,7 +263,7 @@ export function Form({ initialData, submitCallback, isSubmitting }: FormProps) {
           <Button
             type="button"
             variant="outline"
-            onClick={addField}
+            onClick={addAboutField}
             className="w-full"
           >
             Add Bullet Point

@@ -18,6 +18,7 @@ import { type RouterInputs, api } from "~/utils/api";
 import Image from "next/image";
 import { DisclaimerText } from "@/lib/products/DisclaimerText";
 import { Skeleton } from "~/lib/components/ui/skeleton";
+import { twMerge } from "tailwind-merge";
 
 type Size = RouterInputs["order"]["add"]["products"][number]["size"];
 
@@ -50,8 +51,9 @@ function Content() {
   const handleQuantity = (value: number) => setQuantity(value);
 
   const addToCart = useSetAtom(addToCartAtom);
-
   const { toast } = useToast();
+
+  const [activeImage, setActiveImage] = useState<string | undefined>();
 
   if (isLoading) {
     return (
@@ -68,6 +70,10 @@ function Content() {
 
   if (!product) {
     return <div>Product does not exist</div>;
+  }
+
+  if (!activeImage) {
+    setActiveImage(product.images[0]?.url ?? "./placeholder.png");
   }
 
   const priceLabel: string =
@@ -93,38 +99,46 @@ function Content() {
 
   return (
     <main className="flex flex-col gap-6 md:flex-row md:justify-center md:gap-14">
-      <div className="w-full">
+      <div className="flex w-full flex-col gap-4">
         <Image
           priority={true}
           width={500}
           height={500}
           className="aspect-square w-full overflow-hidden rounded-xl object-cover"
-          src={product.imageLink}
+          src={activeImage ?? ""}
           alt={product.name}
         />
+        <div className="grid grid-cols-6 gap-2">
+          {product.images.map(({ id, url }: { id: string; url: string }) => (
+            <button
+              key={id}
+              className={twMerge(
+                `aspect-square w-full overflow-hidden rounded-xl border-2 border-transparent object-cover transition-colors ${
+                  activeImage === url ? "border-2 border-primary" : ""
+                }`,
+              )}
+              onClick={() => setActiveImage(url)}
+            >
+              <Image
+                priority={true}
+                width={100}
+                height={100}
+                className="h-full w-full object-cover"
+                src={url}
+                alt={product.name}
+              />
+            </button>
+          ))}
+        </div>
       </div>
       <form
         className="flex w-full flex-col gap-y-8 md:gap-y-16"
         onSubmit={handleAddToCart}
       >
         <section className="md:pt-8">
-          <h1 className="text-2xl font-medium	">{product.name}</h1>
+          <h1 className="text-2xl font-medium">{product.name}</h1>
           <span className="text-lg">${priceLabel}</span>
         </section>
-        {!!product.aboutProducts.length && (
-          <section>
-            <h2>About this product</h2>
-            <ul>
-              {product.aboutProducts.map(({ id, description }) => {
-                return (
-                  <li className="ml-8 list-disc" key={id}>
-                    {description}
-                  </li>
-                );
-              })}
-            </ul>
-          </section>
-        )}
         {!!product.aboutProducts.length && (
           <section>
             <h2>About this product</h2>

@@ -36,7 +36,17 @@ export default function Products() {
   );
 }
 
-function Product({ id, name, price, imageLink }: Products[number]) {
+function Product({
+  id,
+  name,
+  price,
+  images,
+}: {
+  id: string;
+  name: string;
+  price: number;
+  images: { url: string; description?: string }[];
+}) {
   const priceLabel =
     `${price}`.split(".").length > 1 ? `${price}` : `${price}.00`;
 
@@ -52,8 +62,8 @@ function Product({ id, name, price, imageLink }: Products[number]) {
           fill
           sizes="(min-width: 640px): 100vw, 20vw"
           className="mb-3 h-full w-full overflow-hidden rounded-xl object-cover"
-          src={imageLink}
-          alt={name}
+          src={images[0]?.url ?? "/placeholder.png"}
+          alt={images[0]?.description ?? name}
         />
       </div>
       <h3 className="text-xs">{name}</h3>

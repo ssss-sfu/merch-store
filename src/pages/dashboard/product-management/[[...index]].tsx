@@ -10,7 +10,6 @@ export { getServerSideProps } from "~/utils/serverSideAuth";
 
 export default function Orders() {
   const productsQuery = api.productManagement.getAll.useQuery();
-
   return (
     <Layout>
       <DashboardHeader />
@@ -31,27 +30,35 @@ export default function Orders() {
             ))}
           >
             {(products) => {
-              return products.map((product) => (
-                <Link
-                  href={`./${product.id}`}
-                  key={product.id}
-                  className="grid aspect-[3.5/4] grid-rows-[1fr_auto_auto_auto] items-center gap-2 rounded border-2 border-accent p-4"
-                >
-                  <div className="relative h-full">
-                    <Image
-                      priority={true}
-                      fill
-                      sizes="(min-width: 640px): 100vw, 20vw"
-                      className="h-full w-full object-cover"
-                      src={product.imageLink}
-                      alt={product.name}
-                    />
-                  </div>
-                  <h3>{product.name}</h3>
-                  <span>$ {product.price}</span>
-                  <span>{product.archived ? "Archived" : "Active"}</span>
-                </Link>
-              ));
+              return products.map(
+                (product: {
+                  id: string;
+                  images: { url: string }[];
+                  name: string;
+                  price: number;
+                  archived: boolean;
+                }) => (
+                  <Link
+                    href={`./${product.id}`}
+                    key={product.id}
+                    className="grid aspect-[3.5/4] grid-rows-[1fr_auto_auto_auto] items-center gap-2 rounded border-2 border-accent p-4"
+                  >
+                    <div className="relative h-full">
+                      <Image
+                        priority={true}
+                        fill
+                        sizes="(min-width: 640px): 100vw, 20vw"
+                        className="h-full w-full object-cover"
+                        src={product.images[0]?.url ?? "/"}
+                        alt={product.name}
+                      />
+                    </div>
+                    <h3>{product.name}</h3>
+                    <span>$ {product.price}</span>
+                    <span>{product.archived ? "Archived" : "Active"}</span>
+                  </Link>
+                ),
+              );
             }}
           </FetchResolver>
         </main>
