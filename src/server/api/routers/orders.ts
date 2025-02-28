@@ -16,6 +16,7 @@ import {
 type Order = {
   id: string;
   name: string;
+  discord: string;
   email: string;
   count: bigint;
   total: number;
@@ -28,7 +29,7 @@ export const orderRouter = createTRPCRouter({
     .input(getAllOrdersSchema)
     .query(async ({ ctx, input }) => {
       const orders = await ctx.prisma.$queryRaw<Order[]>`
-        SELECT id, name, email, totals.total, counts.count, "processingState", "createdAt"
+        SELECT id, name, discord, email, totals.total, counts.count, "processingState", "createdAt"
         FROM orders, (
           SELECT "orderId", SUM(price / 100 * quantity) as total
           FROM order_items
@@ -154,6 +155,7 @@ export const orderRouter = createTRPCRouter({
         data: {
           name: input.name,
           email: input.email,
+          discord: input.discord,
           orderedItems: {
             createMany: {
               data: input.products.map((product) => {

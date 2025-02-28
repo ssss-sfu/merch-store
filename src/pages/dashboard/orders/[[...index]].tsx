@@ -94,6 +94,9 @@ const columns = [
   columnHelper.accessor("name", {
     header: "Name",
   }),
+  columnHelper.accessor("discord", {
+    header: "Discord",
+  }),
   columnHelper.accessor("email", {
     header: "Email",
   }),

@@ -3,6 +3,7 @@ import { z } from "zod";
 export const addOrderSchema = z.object({
   name: z.string().min(1),
   email: z.string().email(),
+  discord: z.string().min(1),
   products: z
     .object({
       id: z.string(),
@@ -17,6 +18,7 @@ export const addOrderSchema = z.object({
 export const addFormOrderSchema = addOrderSchema.pick({
   name: true,
   email: true,
+  discord: true,
 });
 
 export type AddFormOrder = z.infer<typeof addFormOrderSchema>;
