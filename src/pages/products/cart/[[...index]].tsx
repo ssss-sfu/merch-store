@@ -158,7 +158,7 @@ function Content() {
               <TotalPrice cart={cart} />
             </Suspense>
           </p>
-          {isClient && (
+          {isClient ? (
             <ClientSideDialog
               open={isModalOpen}
               onOpenChange={handleDialogOpen}
@@ -210,6 +210,8 @@ function Content() {
                 </form>
               </DialogContent>
             </ClientSideDialog>
+          ) : (
+            <Skeleton className="h-10 w-96" />
           )}
         </div>
       </section>

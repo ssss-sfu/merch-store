@@ -13,6 +13,7 @@ export default function SignIn() {
 
   const casCallbackUrl = "/products/cart";
   const credentialsCallbackUrl = "/dashboard";
+
   useEffect(() => {
     if (status === "authenticated") {
       const callbackUrl =
