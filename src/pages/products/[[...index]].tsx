@@ -62,7 +62,7 @@ function Product({
           fill
           sizes="(min-width: 640px): 100vw, 20vw"
           className="mb-3 h-full w-full overflow-hidden rounded-xl object-cover"
-          src={images[0]?.url ?? "/placeholder.png"}
+          src={images[0]?.url ?? ""}
           alt={images[0]?.description ?? name}
         />
       </div>

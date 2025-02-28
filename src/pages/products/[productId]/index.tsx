@@ -73,7 +73,7 @@ function Content() {
   }
 
   if (!activeImage) {
-    setActiveImage(product.images[0]?.url ?? "./placeholder.png");
+    setActiveImage(product.images[0]?.url ?? "");
   }
 
   const priceLabel: string =
