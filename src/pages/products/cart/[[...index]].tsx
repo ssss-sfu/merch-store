@@ -23,10 +23,12 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { type AddFormOrder, addFormOrderSchema } from "~/schemas/order";
 import { FieldValidation } from "@/lib/components/FieldValidation";
 import { useToast } from "@/ui/use-toast";
-import { useState } from "react";
+import { useState, useMemo, Suspense, useEffect } from "react";
 import Image from "next/image";
 import { DisclaimerText } from "@/lib/products/DisclaimerText";
 import { Skeleton } from "~/lib/components/ui/skeleton";
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
 
 type Product = RouterOutputs["product"]["getFromCart"][number];
 
@@ -42,26 +44,57 @@ export default function Index() {
 function Content() {
   const cart = useAtomValue(cartAtom);
   const clearCart = useSetAtom(clearCartAtom);
+  const { data: session } = useSession();
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
-
-  const { data: products } = api.product.getFromCart.useQuery(
-    cart.map((item) => ({ id: item.id, size: item.size, price: item.price })),
-    { refetchOnWindowFocus: false },
-  );
   const queryUtils = api.useUtils();
 
   const {
     register,
     handleSubmit,
     reset,
+    getValues,
     formState: { errors },
   } = useForm<AddFormOrder>({
     resolver: zodResolver(addFormOrderSchema),
-    defaultValues: { name: "", email: "" },
+    defaultValues: {
+      name: "",
+      email: session?.user?.email ?? "ADMIN",
+      discord: "",
+    },
   });
 
+  useEffect(() => {
+    if (session?.user?.email) {
+      reset({
+        ...getValues(),
+        email: session.user.email,
+      });
+    }
+  }, [getValues, session, reset]);
+
   const { toast } = useToast();
+  const router = useRouter();
+  const handleDialogOpen = (open: boolean) => {
+    if (session === null) {
+      router.push("/auth/signin");
+      return;
+    }
+    if (open && cart.length === 0) {
+      toast({
+        title: "Your cart is empty",
+        description: "Please add items to your cart before placing an order.",
+        variant: "destructive",
+      });
+      return;
+    }
+    setIsModalOpen(open);
+  };
   const placeOrderMutation = api.order.add.useMutation({
     async onSuccess(res) {
       if (res?.type && res.type === "error") {
@@ -100,80 +133,124 @@ function Content() {
     placeOrderMutation.mutate({ ...data, products: cart }),
   );
 
-  const totalPrice: string = cart
-    .reduce((accumulator, currentItem) => {
-      const quantity = currentItem.quantity;
-
-      return accumulator + quantity * currentItem.price;
-    }, 0)
-    .toFixed(2);
-
   return (
-    <main className="px-4">
-      <h2 className="pb-8 text-3xl	font-medium">Your Cart</h2>
-      <section className="flex flex-col-reverse	gap-10 md:flex-row">
-        {cart.length ? (
-          <ul className="flex w-full	flex-col gap-8">
-            {cart.map((cartItem) => {
-              return (
-                <CartItemComponent
-                  key={
-                    cartItem.size !== undefined
-                      ? cartItem.id + cartItem.size
-                      : cartItem.id
-                  }
-                  cart={cartItem}
-                  product={products?.find(
-                    (product) => product.id === cartItem.id,
-                  )}
-                />
-              );
-            })}
-          </ul>
-        ) : (
-          <p className="w-full text-xl">No items yet</p>
-        )}
+    <main className="">
+      <h2 className="pb-8 text-3xl font-medium">Your Cart</h2>
+      <section className="flex flex-col-reverse gap-10 md:flex-row">
+        <div className="w-full">
+          {isClient ? (
+            <>
+              {cart.length > 0 ? (
+                <ProductList cart={cart} />
+              ) : (
+                <p className="w-full text-xl">No items yet</p>
+              )}
+            </>
+          ) : (
+            <CartItemSkeleton />
+          )}
+        </div>
+
         <div className="md:max-w-[30%]">
-          <h2 className="pb-8 text-xl	font-medium">Total</h2>
-          <p className="pb-4 text-3xl">${totalPrice}</p>
-          <ClientSideDialog
-            open={isModalOpen}
-            onOpenChange={(e) => setIsModalOpen(e)}
-          >
-            <DialogTrigger asChild>
-              <div className="flex flex-col gap-2">
-                <Button disabled={cart.length === 0}>Place Order*</Button>
-                <DisclaimerText />
-              </div>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogTitle>Place Order</DialogTitle>
-              <form className="grid gap-4" onSubmit={placeOrder}>
-                <div className="grid gap-2">
-                  <label htmlFor="name">Name</label>
-                  <FieldValidation error={errors.name}>
-                    <Input id="name" {...register("name")} />
-                  </FieldValidation>
-                </div>
-                <div className="grid gap-2">
-                  <label htmlFor="email">Email</label>
-                  <FieldValidation error={errors.email}>
-                    <Input id="email" {...register("email")} />
-                  </FieldValidation>
-                </div>
-                <div className="flex flex-col gap-2">
-                  <Button type="submit" disabled={placeOrderMutation.isLoading}>
-                    Place Order*
-                  </Button>
-                  <DisclaimerText />
-                </div>
-              </form>
-            </DialogContent>
-          </ClientSideDialog>
+          <h2 className="pb-8 text-xl font-medium">Total</h2>
+          <p className="pb-4 text-3xl">
+            <Suspense fallback={<>$0.00</>}>
+              <TotalPrice cart={cart} />
+            </Suspense>
+          </p>
+          {isClient && (
+            <ClientSideDialog
+              open={isModalOpen}
+              onOpenChange={handleDialogOpen}
+            >
+              <Suspense>
+                <DialogTrigger asChild>
+                  <div className="flex flex-col gap-2">
+                    <Button disabled={cart.length === 0}>Place Order*</Button>
+                    <DisclaimerText />
+                  </div>
+                </DialogTrigger>
+              </Suspense>
+              <DialogContent>
+                <DialogTitle>Place Order</DialogTitle>
+                <form className="grid gap-4" onSubmit={placeOrder}>
+                  <div className="grid gap-2">
+                    <label htmlFor="name">Name</label>
+                    <FieldValidation error={errors.name}>
+                      <Input id="name" {...register("name")} />
+                    </FieldValidation>
+                  </div>
+                  <div className="grid gap-2">
+                    <label htmlFor="discord">Discord</label>
+                    <FieldValidation error={errors.discord}>
+                      <Input id="discord" {...register("discord")} />
+                    </FieldValidation>
+                  </div>
+                  <div className="grid gap-2">
+                    <label htmlFor="email">Email</label>
+                    <FieldValidation error={errors.email}>
+                      <Input
+                        id="email"
+                        {...register("email")}
+                        readOnly
+                        disabled
+                        className="cursor-not-allowed"
+                      />
+                    </FieldValidation>
+                  </div>
+                  <div className="flex flex-col gap-2">
+                    <Button
+                      type="submit"
+                      disabled={placeOrderMutation.isLoading}
+                    >
+                      Place Order*
+                    </Button>
+                    <DisclaimerText />
+                  </div>
+                </form>
+              </DialogContent>
+            </ClientSideDialog>
+          )}
         </div>
       </section>
     </main>
   );
+}
+
+function ProductList({ cart }: { cart: CartItem[] }) {
+  const { data: products } = api.product.getFromCart.useQuery(
+    cart.map((item) => ({ id: item.id, size: item.size, price: item.price })),
+    { refetchOnWindowFocus: false, suspense: true },
+  );
+
+  return (
+    <ul className="flex w-full flex-col gap-8">
+      {cart.map((cartItem) => (
+        <CartItemComponent
+          key={
+            cartItem.size !== undefined
+              ? cartItem.id + cartItem.size
+              : cartItem.id
+          }
+          cart={cartItem}
+          product={products?.find((product) => product.id === cartItem.id)}
+        />
+      ))}
+    </ul>
+  );
+}
+
+function TotalPrice({ cart }: { cart: CartItem[] }) {
+  const totalPrice = useMemo(() => {
+    return cart
+      .reduce((accumulator, currentItem) => {
+        const quantity = currentItem.quantity;
+        return accumulator + quantity * currentItem.price;
+      }, 0)
+      .toFixed(2);
+  }, [cart]);
+
+  return <>${totalPrice}</>;
 }
 
 type CartItemComponentProps = {
@@ -191,7 +268,7 @@ function CartItemComponent({ cart, product }: CartItemComponentProps) {
   if (!product) {
     return (
       <li>
-        <Skeleton className="h-[11rem] w-full" />
+        <CartItemSkeleton />
       </li>
     );
   }
@@ -272,6 +349,24 @@ function CartItemComponent({ cart, product }: CartItemComponentProps) {
             )}
           </>
         )}
+      </div>
+    </li>
+  );
+}
+
+function CartItemSkeleton() {
+  return (
+    <li>
+      <div className="flex items-start gap-8">
+        <Skeleton className="aspect-square w-[30%] max-w-[180px] rounded-xl" />
+        <div className="flex-1 space-y-4">
+          <Skeleton className="h-6 w-3/4" />
+          <Skeleton className="h-4 w-1/2" />
+          <Skeleton className="h-4 w-1/3" />
+          <div className="pt-2">
+            <Skeleton className="h-10 w-24" />
+          </div>
+        </div>
       </div>
     </li>
   );
