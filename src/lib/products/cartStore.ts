@@ -5,7 +5,35 @@ export type CartItem = GetCartInput & {
   quantity: number;
 };
 
-export const cartAtom = atom<CartItem[]>([]);
+const getCartFromSessionStorage = (): CartItem[] => {
+  if (typeof window !== "undefined") {
+    const cart = sessionStorage.getItem("cart");
+    return cart ? (JSON.parse(cart) as CartItem[]) : [];
+  }
+  return [];
+};
+
+const saveCartToSessionStorage = (cart: CartItem[]) => {
+  if (typeof window !== "undefined") {
+    sessionStorage.setItem("cart", JSON.stringify(cart));
+  }
+};
+
+const cartWithSessionStorageAtom = atom<CartItem[]>(
+  getCartFromSessionStorage(),
+);
+
+export const cartAtom = atom(
+  (get) => get(cartWithSessionStorageAtom),
+  (get, set, update: CartItem[] | ((prev: CartItem[]) => CartItem[])) => {
+    const newCart =
+      typeof update === "function"
+        ? update(get(cartWithSessionStorageAtom))
+        : update;
+    set(cartWithSessionStorageAtom, newCart);
+    saveCartToSessionStorage(newCart);
+  },
+);
 
 export const addToCartAtom = atom(null, (get, set, update: CartItem) => {
   const cart = get(cartAtom);
