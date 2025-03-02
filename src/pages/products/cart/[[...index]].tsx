@@ -64,7 +64,7 @@ function Content() {
     resolver: zodResolver(addFormOrderSchema),
     defaultValues: {
       name: "",
-      email: session?.user?.email ?? "ADMIN",
+      email: session?.user?.email ?? "SSSS-EXEC@TEST.COM",
       discord: "",
     },
   });

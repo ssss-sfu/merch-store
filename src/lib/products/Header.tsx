@@ -4,11 +4,12 @@ import { IconCart } from "@/lib/components/icons/icon-cart";
 import { useAtom } from "jotai";
 import { cartCountAtom } from "@/lib/products/cartStore";
 import { useEffect, useState, useMemo } from "react";
+import { useSession } from "next-auth/react";
 
 export default function Header() {
   const [cartCount] = useAtom(cartCountAtom);
   const [isClient, setIsClient] = useState(false);
-
+  const { data } = useSession();
   useEffect(() => {
     setIsClient(true);
   }, []);
@@ -30,10 +31,22 @@ export default function Header() {
           </Link>
           <Link
             className="hidden underline-offset-8 hover:underline sm:block"
+            href="/faq"
+          >
+            FAQ
+          </Link>
+          <Link
+            className="hidden underline-offset-8 hover:underline sm:block"
             href="https://www.sfussss.org/"
             target="_blank"
           >
-            SSSS Website
+            SSSS
+          </Link>
+          <Link
+            href={data ? "/api/auth/signout" : "/api/auth/signin"}
+            className="hidden underline-offset-8 hover:underline sm:block"
+          >
+            {data ? "Sign Out" : "Sign In"}
           </Link>
           <Link href="/products/cart" className="relative">
             <IconCart />
