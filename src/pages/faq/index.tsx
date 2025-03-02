@@ -24,11 +24,11 @@ export default function FAQPage() {
     <Layout>
       <Header />
       <main>
-        <section className="flex flex-col gap-8 px-4 py-8">
+        <section className="flex flex-col">
           {faqs.map((faq, index) => (
             <div
               key={index}
-              className="flex flex-col items-start gap-3 rounded-lg p-6 text-left"
+              className="flex flex-col items-start gap-3 rounded-lg text-left"
             >
               <h2 className="text-xl font-semibold text-gray-800">
                 {faq.question}
