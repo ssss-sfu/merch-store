@@ -28,7 +28,7 @@ The implementation for the store is done all in the frontend in the file `cartSt
 
 ## Admin Dashboard
 
-The dashboard can be access through `/dashboard` in the url bar
+The dashboard can be access through `/dashboard` in the url bar. Can only be accessed through logging in to an admin account, SFU accounts do not have access to protected routes.
 
 ### Changing the admin credentials
 
@@ -48,6 +48,8 @@ update the passowrd in the db with the hashed password.
 ### Adding additional logic for authorization/authentication
 
 Authentication is handled by a library called [NextAuth](https://next-auth.js.org/). The login logic can be found in the file `auth.ts`.
+
+SFU Authentication is done through [SFU CAS](https://www.sfu.ca/information-systems/services/cas/cas-for-web-applications/), which provides the user with a CAS ticket, and validates it against SFU's CAS via an XML document. If ticket is valid, extract the id and email to a JWT, creating basic SFU auth for app.
 
 ## Frontend Backend communication
 
