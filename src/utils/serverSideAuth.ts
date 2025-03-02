@@ -16,7 +16,7 @@ export const getServerSideProps: GetServerSideProps<object> = async (ctx) => {
   if (session.user.email?.endsWith("@sfu.ca")) {
     return {
       redirect: {
-        destination: `/auth/invalid`,
+        destination: `/auth/error`,
         permanent: false,
       },
     };
