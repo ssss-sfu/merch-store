@@ -17,6 +17,7 @@ import {
 type Order = {
   id: string;
   name: string;
+  discord: string;
   email: string;
   count: bigint;
   total: number;
@@ -29,7 +30,7 @@ export const orderRouter = createTRPCRouter({
     .input(getAllOrdersSchema)
     .query(async ({ ctx, input }) => {
       const orders = await ctx.prisma.$queryRaw<Order[]>`
-        SELECT id, name, email, totals.total, counts.count, "processingState", "createdAt"
+        SELECT id, name, discord, email, totals.total, counts.count, "processingState", "createdAt"
         FROM orders, (
           SELECT "orderId", SUM(price)::INT as total
           FROM order_items
@@ -52,6 +53,14 @@ export const orderRouter = createTRPCRouter({
       return orders;
     }),
   get: protectedProcedure.input(z.string()).query(async ({ ctx, input }) => {
+    const sizes = await ctx.prisma.$queryRaw<{ size: string }[]>`
+    SELECT size
+    FROM order_items
+    WHERE "orderId" = ${input}
+  `;
+
+    const sizeList = sizes?.map((row) => row.size as Size) || [];
+
     const order = await ctx.prisma.order.findUnique({
       where: {
         id: input,
@@ -62,19 +71,14 @@ export const orderRouter = createTRPCRouter({
             product: {
               include: {
                 availableSizes: {
-                  where: {
-                    productSize: {
-                      size: {
-                        in: (
-                          await ctx.prisma.$queryRaw<{ size: string }[]>`
-                          SELECT size
-                          FROM order_items
-                          WHERE "orderId" = ${input}
-                        `
-                        ).map((row) => row.size as Size),
-                      },
-                    },
-                  },
+                  where:
+                    sizeList.length > 0
+                      ? {
+                          productSize: {
+                            size: {},
+                          },
+                        }
+                      : {},
                 },
               },
             },
@@ -82,7 +86,6 @@ export const orderRouter = createTRPCRouter({
         },
       },
     });
-
     const _total = await getOrderTotal(input, ctx);
     const total = _total?.[0]?.total;
 
@@ -159,6 +162,7 @@ export const orderRouter = createTRPCRouter({
         data: {
           name: input.name,
           email: input.email,
+          discord: input.discord,
           orderedItems: {
             createMany: {
               data: input.products.map((product) => {

@@ -116,12 +116,12 @@ model Product {
 }
 
 model Image {
-  id        String  @id @default(cuid())
-  url       String  @db.VarChar(2048)
-  productId String
-  description String @db.Text
-  product   Product @relation(fields: [productId], references: [id])
-  order    Int     @default(0)
+  id          String  @id @default(cuid())
+  url         String  @db.VarChar(2048)
+  productId   String
+  description String  @db.Text
+  product     Product @relation(fields: [productId], references: [id])
+  order       Int     @default(0)
 
   @@index([productId])
   @@map("images")
@@ -161,6 +161,7 @@ model Order {
   id              String          @id @default(cuid())
   name            String
   email           String
+  discord         String
   processingState ProcessingState @default(processing)
   createdAt       DateTime        @default(now())
   updatedAt       DateTime        @updatedAt

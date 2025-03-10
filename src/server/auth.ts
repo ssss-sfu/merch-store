@@ -1,4 +1,3 @@
-import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import { type GetServerSidePropsContext } from "next";
 import {
   getServerSession,
@@ -6,57 +5,84 @@ import {
   type DefaultSession,
 } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
-import { prisma } from "~/server/db";
+import { z } from "zod";
+import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import bycrpt from "bcrypt";
-
+import { prisma } from "~/server/db";
 /**
- * Module augmentation for `next-auth` types. Allows us to add custom properties to the `session`
- * object and keep type safety.
- *
- * @see https://next-auth.js.org/getting-started/typescript#module-augmentation
+ * Validates a CAS ticket
+ * @param ticket The CAS ticket to validate
+ * @param serviceUrl The URL of the service to validate the ticket against
+ * @returns The username of the user if the ticket is valid, otherwise null
  */
-declare module "next-auth" {
-  interface Session extends DefaultSession {
-    user: {
-      id: string;
-      // ...other properties
-      // role: UserRole;
-    } & DefaultSession["user"];
+async function validateCASTicket(ticket: string, serviceUrl: string) {
+  try {
+    const encodedServiceUrl = encodeURIComponent(serviceUrl);
+
+    const validationUrl = `https://cas.sfu.ca/cas/serviceValidate?ticket=${ticket}&service=${encodedServiceUrl}`;
+
+    const response = await fetch(validationUrl);
+
+    if (!response.ok) {
+      console.error(`[CAS] Validation failed: ${response.statusText}`);
+      throw new Error(`CAS validation failed: ${response.statusText}`);
+    }
+
+    const xml = await response.text();
+    console.log(`[CAS] Response XML: ${xml}`);
+
+    // probably could improve this with a proper XML parser via a package
+    if (xml.includes("<cas:authenticationSuccess>")) {
+      const usernameMatch = xml.match(/<cas:user>(.*?)<\/cas:user>/);
+      if (usernameMatch?.[1]) {
+        const username = usernameMatch[1];
+        return {
+          success: true,
+          username: username,
+        };
+      }
+    }
+
+    console.log(`[CAS] Authentication failed, no valid user found in response`);
+    return { success: false };
+  } catch (error) {
+    console.error("[CAS] Error validating CAS ticket:", error);
+    return { success: false };
   }
-
-  // interface User {
-  //   // ...other properties
-  //   // role: UserRole;
-  // }
 }
-
 /**
  * Options for NextAuth.js used to configure adapters, providers, callbacks, etc.
  *
  * @see https://next-auth.js.org/configuration/options
  */
+
+// Extend the session user type to include id
+declare module "next-auth" {
+  interface Session {
+    user: {
+      id: string;
+    } & DefaultSession["user"];
+  }
+}
+
 export const authOptions: NextAuthOptions = {
   session: { strategy: "jwt" },
-  pages: {
-    signIn: "/auth/signin",
-  },
   callbacks: {
-    session: ({ session, user, token }) => {
+    // JWT Callback
+    async jwt({ token, user }) {
       if (user) {
-        return {
-          ...session,
-          user: {
-            ...session.user,
-            id: user.id,
-          },
-        };
+        console.log("[CAS] Setting JWT token with user data:", user);
+        token.id = user.id;
       }
-      return {
-        ...session,
-        user: {
-          id: token.sub!,
-        },
-      };
+      return token;
+    },
+    // Session Callback
+    async session({ session, token }) {
+      if (token && session.user) {
+        console.log("Setting session with token data:", token);
+        session.user.id = token.id as string;
+      }
+      return session;
     },
   },
   adapter: PrismaAdapter(prisma),
@@ -98,16 +124,56 @@ export const authOptions: NextAuthOptions = {
         return user;
       },
     }),
-    /**
-     * ...add more providers here.
-     *
-     * Most other providers require a bit more work than the Discord provider. For example, the
-     * GitHub provider requires you to add the `refresh_token_expires_in` field to the Account
-     * model. Refer to the NextAuth.js docs for the provider you want to use. Example:
-     *
-     * @see https://next-auth.js.org/providers/github
-     */
+    CredentialsProvider({
+      id: "cas",
+      name: "CAS",
+      credentials: {
+        ticket: { label: "Ticket", type: "text" },
+        redirectUrl: { label: "Redirect URL", type: "text" },
+      },
+      async authorize(credentials) {
+        try {
+          const { ticket, redirectUrl } = z
+            .object({
+              ticket: z.string().min(1),
+              redirectUrl: z.string().url(),
+            })
+            .parse(credentials);
+
+          // Validate ticket with CAS server Helper Function
+          const validation = await validateCASTicket(ticket, redirectUrl);
+
+          if (validation.success) {
+            const email = `${validation.username}@sfu.ca`;
+
+            // Server logging
+            console.log("[CAS] User authenticated successfully:", {
+              id: validation.username,
+              name: validation.username,
+              email: email,
+            });
+
+            return {
+              id: validation.username ?? "",
+              name: validation.username,
+              email: email,
+            };
+          }
+
+          return null;
+        } catch (error) {
+          console.error("[CAS] Error during authorization:", error);
+          return null;
+        }
+      },
+    }),
   ],
+  pages: {
+    signIn: "/auth/signin",
+    signOut: "/auth/signout",
+    error: "/auth/error",
+  },
+  debug: process.env.NODE_ENV === "development",
 };
 
 /**

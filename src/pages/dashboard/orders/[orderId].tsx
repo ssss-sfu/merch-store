@@ -101,6 +101,7 @@ export default function OrderId() {
                       </Select>
                     </li>
                     <li>Name: {order.name}</li>
+                    <li>Discord: {order.discord}</li>
                     <li>Email: {order.email}</li>
                     <li>Ordered At: {order.createdAt.toLocaleDateString()}</li>
                   </ul>

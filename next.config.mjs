@@ -19,7 +19,11 @@ const config = {
     defaultLocale: "en",
   },
   images: {
-    domains: ["drive.google.com", "lh3.googleusercontent.com", "utfs.io"],
+    remotePatterns: [
+      { protocol: "https", hostname: "drive.google.com" },
+      { protocol: "https", hostname: "lh3.googleusercontent.com" },
+      { protocol: "https", hostname: "utfs.io" },
+    ],
   },
   async redirects() {
     return [
