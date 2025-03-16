@@ -178,7 +178,7 @@ export function Form({ initialData, submitCallback, isSubmitting }: FormProps) {
             }}
           />
           <UploadButton
-            className="ut-button:h-10 ut-button:w-auto ut-button:bg-primary ut-button:px-4 ut-button:py-2 ut-button:text-sm ut-button:hover:bg-primary/90"
+            className="ut-button:h-10 ut-button:w-auto ut-button:bg-primary ut-button:px-4 ut-button:py-2 ut-button:text-sm hover:ut-button:bg-primary/90"
             config={{ cn: twMerge }}
             content={{ button: "Upload Image" }}
             endpoint="imageUploader"
