@@ -113,10 +113,19 @@ function Content() {
         setIsModalOpen(false);
         return;
       }
+
+      // Get the order ID from the response
+      const orderId = res.id;
+
       toast({ title: "Order placed" });
       clearCart();
       reset();
       setIsModalOpen(false);
+
+      // Redirect to the order confirmation page
+      if (orderId) {
+        router.push(`/order/${orderId}`);
+      }
     },
     onError(error) {
       if (error.data?.code && error.data.code === "CONFLICT") {
@@ -295,7 +304,7 @@ function CartItemComponent({ cart, product }: CartItemComponentProps) {
           alt={product.name}
         />
         <div>
-          <h3 className="pb-4 font-medium	">{product.name}</h3>
+          <h3 className="pb-4 font-medium">{product.name}</h3>
           <div className="flex items-center gap-2 text-sm">
             <label>Quantity:</label>
             <Input

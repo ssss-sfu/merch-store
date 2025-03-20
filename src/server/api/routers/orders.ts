@@ -158,7 +158,7 @@ export const orderRouter = createTRPCRouter({
         };
       }
 
-      await ctx.prisma.order.create({
+      const order = await ctx.prisma.order.create({
         data: {
           name: input.name,
           email: input.email,
@@ -166,18 +166,20 @@ export const orderRouter = createTRPCRouter({
           orderedItems: {
             createMany: {
               data: input.products.map((product) => {
-                const priceInCents = transformPriceToModel(product.price);
                 return {
                   productId: product.id,
                   quantity: product.quantity,
                   size: product.size,
-                  price: priceInCents,
+                  price: transformPriceToModel(product.price),
                 };
               }),
             },
           },
         },
       });
+
+      // Return the order ID so we can redirect to it
+      return { id: order.id };
     }),
   updateProcessingState: protectedProcedure
     .input(
