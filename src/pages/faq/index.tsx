@@ -8,7 +8,7 @@ export default function FAQPage() {
     {
       question: "How will I pick it up?",
       answer:
-        "Join our Discord. Once you join, please reach out to our executive team with your order details, and they will provide you with further instructions on where and when to collect your items. If no attempt has been made to pick up your order within a week, we will cancel your order.",
+        "Join our Discord. Once you join, please reach out to our executive team with your order details, and they will provide you with further instructions on where and when to collect your items. If no attempt has been made to pick up your order within a week, your order will be cancelled.",
     },
     {
       question: "How is payment done?",

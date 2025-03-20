@@ -6,12 +6,20 @@ import { useRouter } from "next/router";
 import { Button } from "@/ui/button";
 import { useToast } from "@/ui/use-toast";
 import Link from "next/link";
+import { api } from "~/utils/api";
+import Image from "next/image";
+import { Skeleton } from "~/lib/components/ui/skeleton";
 
 export default function OrderConfirmation() {
   const router = useRouter();
   const { id } = router.query;
   const { toast } = useToast();
   const [copied, setCopied] = useState(false);
+
+  const { data: orderData, isLoading } = api.order.get.useQuery(id as string, {
+    enabled: !!id,
+    refetchOnWindowFocus: false,
+  });
 
   const copyToClipboard = () => {
     const url = window.location.href;
@@ -29,12 +37,14 @@ export default function OrderConfirmation() {
     <Layout>
       <Header />
       <main className="flex flex-col items-center justify-center py-12">
-        <div className="w-full max-w-md rounded-lg border border-gray-200 bg-white p-8 shadow-md">
+        <div className="w-full max-w-2xl rounded-lg border border-gray-200 bg-white p-8 shadow-md">
           <div className="mb-6 text-center">
             <h1 className="mb-2 text-2xl font-bold text-green-600">
               Order Confirmed!
             </h1>
-            <p className="text-gray-600">Thank you for your order.</p>
+            <p className="text-balance text-gray-600">
+              Thank you for your order, an email will be sent to you shortly.
+            </p>
           </div>
 
           <div className="mb-6 rounded-lg">
@@ -42,11 +52,116 @@ export default function OrderConfirmation() {
             <p className="mb-1 text-gray-700">
               <span className="font-medium">Order ID:</span> {id}
             </p>
-            <p className="mb-4 text-sm text-gray-500">
-              An email will be sent to you shortly.
-            </p>
 
-            <div className="mt-4 flex flex-col gap-2">
+            {isLoading ? (
+              <div className="mt-4">
+                <div className="mb-4 grid grid-cols-2 gap-2 text-sm">
+                  <div>
+                    <Skeleton className="h-5 w-32" />
+                  </div>
+                  <div>
+                    <Skeleton className="h-5 w-40" />
+                  </div>
+                  <div>
+                    <Skeleton className="h-5 w-48" />
+                  </div>
+                  <div>
+                    <Skeleton className="h-5 w-36" />
+                  </div>
+                </div>
+
+                <h3 className="mb-2 font-medium">Items Ordered:</h3>
+                <div className="divide-y divide-gray-200">
+                  {[1, 2, 3].map((item) => (
+                    <div key={item} className="flex py-3">
+                      <div className="mr-4 h-12 w-12">
+                        <Skeleton className="h-12 w-12" />
+                      </div>
+                      <div className="flex flex-1 flex-col">
+                        <div className="flex justify-between">
+                          <Skeleton className="h-5 w-32" />
+                          <Skeleton className="h-5 w-16" />
+                        </div>
+                        <div className="mt-1 flex items-end justify-between">
+                          <Skeleton className="h-4 w-20" />
+                          <Skeleton className="h-4 w-16" />
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="mt-4 border-t border-gray-200 pt-4">
+                  <div className="flex justify-between text-base font-medium text-gray-900">
+                    <p>Total</p>
+                    <Skeleton className="h-5 w-16" />
+                  </div>
+                </div>
+              </div>
+            ) : orderData ? (
+              <div className="mt-4">
+                <div className="mb-4 grid grid-cols-2 gap-2 text-sm">
+                  <p className="text-gray-700">
+                    <span className="font-medium">Name:</span> {orderData.name}
+                  </p>
+                  <p className="text-gray-700">
+                    <span className="font-medium">Discord:</span>{" "}
+                    {orderData.discord}
+                  </p>
+                  <p className="text-gray-700">
+                    <span className="font-medium">Email:</span>{" "}
+                    {orderData.email}
+                  </p>
+                  <p className="text-gray-700">
+                    <span className="font-medium">Date:</span>{" "}
+                    {new Date(orderData.createdAt).toLocaleDateString()}
+                  </p>
+                </div>
+
+                <h3 className="mb-2 font-medium">Items Ordered:</h3>
+                <div className="divide-y divide-gray-200">
+                  {orderData.orderedItems.map((item) => (
+                    <div key={item.id} className="flex py-3">
+                      <div className="mr-4 h-12 w-12 flex-shrink-0 overflow-hidden rounded-md border border-gray-200">
+                        {item.product.images?.[0] && (
+                          <Image
+                            src={item.product.images[0].url}
+                            alt={item.product.name}
+                            width={64}
+                            height={64}
+                            className="h-full w-full object-cover object-center"
+                          />
+                        )}
+                      </div>
+                      <div className="flex flex-1 flex-col">
+                        <div className="flex justify-between text-base font-medium text-gray-900">
+                          <h3>{item.product.name}</h3>
+                          <p className="ml-4">${item.price.toFixed(2)}</p>
+                        </div>
+                        <div className="mt-1 flex items-end justify-between text-sm">
+                          <p className="text-gray-500">
+                            {item.size && `Size: ${item.size.toUpperCase()}`}
+                            {!item.size && "No size"}
+                          </p>
+                          <p className="text-gray-500">Qty: {item.quantity}</p>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="mt-4 border-t border-gray-200 pt-4">
+                  <div className="flex justify-between text-base font-medium text-gray-900">
+                    <p>Total</p>
+                    <p>${orderData.total.toFixed(2)}</p>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <p className="text-gray-500">Order details not found.</p>
+            )}
+
+            <div className="mt-6 flex flex-col gap-2">
               <Button
                 onClick={copyToClipboard}
                 className="w-full"
@@ -63,7 +178,7 @@ export default function OrderConfirmation() {
             </div>
           </div>
 
-          <div className="rounded-xl text-sm text-blue-800">
+          <div className="text-sm">
             <p className="font-medium">Next Steps:</p>
             <p className="mt-1">
               Join our Discord and reach out to our executive team with your
@@ -72,7 +187,7 @@ export default function OrderConfirmation() {
             </p>
             <p className="mt-2 font-medium">
               Note: If no attempt has been made to pick up your order within a
-              week, we will cancel your order.
+              week, your order will be cancelled.
             </p>
           </div>
         </div>

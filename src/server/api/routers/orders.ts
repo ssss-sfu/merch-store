@@ -52,7 +52,7 @@ export const orderRouter = createTRPCRouter({
 
       return orders;
     }),
-  get: protectedProcedure.input(z.string()).query(async ({ ctx, input }) => {
+  get: publicProcedure.input(z.string()).query(async ({ ctx, input }) => {
     const sizes = await ctx.prisma.$queryRaw<{ size: string }[]>`
     SELECT size
     FROM order_items
@@ -70,6 +70,7 @@ export const orderRouter = createTRPCRouter({
           include: {
             product: {
               include: {
+                images: true,
                 availableSizes: {
                   where:
                     sizeList.length > 0
@@ -166,11 +167,12 @@ export const orderRouter = createTRPCRouter({
           orderedItems: {
             createMany: {
               data: input.products.map((product) => {
+                const priceInCents = transformPriceToModel(product.price);
                 return {
                   productId: product.id,
                   quantity: product.quantity,
                   size: product.size,
-                  price: transformPriceToModel(product.price),
+                  price: priceInCents,
                 };
               }),
             },
@@ -178,8 +180,9 @@ export const orderRouter = createTRPCRouter({
         },
       });
 
-      // Return the order ID so we can redirect to it
-      return { id: order.id };
+      return {
+        id: order.id,
+      };
     }),
   updateProcessingState: protectedProcedure
     .input(
