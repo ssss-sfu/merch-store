@@ -166,11 +166,12 @@ export const orderRouter = createTRPCRouter({
           orderedItems: {
             createMany: {
               data: input.products.map((product) => {
+                const priceInCents = transformPriceToModel(product.price);
                 return {
                   productId: product.id,
                   quantity: product.quantity,
                   size: product.size,
-                  price: transformPriceToModel(product.price),
+                  price: priceInCents,
                 };
               }),
             },
@@ -262,7 +263,7 @@ export const orderRouter = createTRPCRouter({
 
 async function getOrderTotal(orderId: string, ctx: Context) {
   const total = await ctx.prisma.$queryRaw<{ total: number }[]>`
-    SELECT SUM(price / 100 * quantity) as total
+    SELECT SUM(price * quantity) / 100 as total
     FROM order_items
     WHERE "orderId" = ${orderId}
     GROUP BY "orderId"
