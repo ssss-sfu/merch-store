@@ -155,6 +155,7 @@ model OrderItem {
 enum ProcessingState {
   processing
   processed
+  cancelled
 }
 
 model Order {

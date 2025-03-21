@@ -114,7 +114,6 @@ function Content() {
         return;
       }
 
-      // Get the order ID from the response
       const orderId = res.id;
 
       toast({ title: "Order placed" });

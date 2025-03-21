@@ -32,7 +32,7 @@ export const orderRouter = createTRPCRouter({
       const orders = await ctx.prisma.$queryRaw<Order[]>`
         SELECT id, name, discord, email, totals.total, counts.count, "processingState", "createdAt"
         FROM orders, (
-          SELECT "orderId", SUM(price)::INT as total
+          SELECT "orderId", SUM(price * quantity)::INT as total
           FROM order_items
           GROUP BY "orderId"
         ) as totals, (
@@ -54,10 +54,10 @@ export const orderRouter = createTRPCRouter({
     }),
   get: publicProcedure.input(z.string()).query(async ({ ctx, input }) => {
     const sizes = await ctx.prisma.$queryRaw<{ size: string }[]>`
-    SELECT size
-    FROM order_items
-    WHERE "orderId" = ${input}
-  `;
+      SELECT size
+      FROM order_items
+      WHERE "orderId" = ${input}
+    `;
 
     const sizeList = sizes?.map((row) => row.size as Size) || [];
 
@@ -87,6 +87,7 @@ export const orderRouter = createTRPCRouter({
         },
       },
     });
+
     const _total = await getOrderTotal(input, ctx);
     const total = _total?.[0]?.total;
 
@@ -159,110 +160,222 @@ export const orderRouter = createTRPCRouter({
         };
       }
 
-      const order = await ctx.prisma.order.create({
-        data: {
-          name: input.name,
-          email: input.email,
-          discord: input.discord,
-          orderedItems: {
-            createMany: {
-              data: input.products.map((product) => {
-                const priceInCents = transformPriceToModel(product.price);
-                return {
-                  productId: product.id,
-                  quantity: product.quantity,
-                  size: product.size,
-                  price: priceInCents,
-                };
-              }),
+      // Start the transaction to ensure inventory
+      return await ctx.prisma.$transaction(async (tx) => {
+        // Check product availability and decrement inventory
+        for (const item of input.products) {
+          // If size is specified, check size-specific inventory
+          if (item.size) {
+            const availableSize = await tx.availableSize.findFirst({
+              where: {
+                productId: item.id,
+                productSize: {
+                  size: item.size,
+                },
+              },
+            });
+
+            if (!availableSize || availableSize.quantity < item.quantity) {
+              throw new TRPCError({
+                code: "BAD_REQUEST",
+                message: `Not enough inventory for product ${item.id} in size ${item.size}`,
+              });
+            }
+
+            // Decrement inventory
+            await tx.availableSize.update({
+              where: { id: availableSize.id },
+              data: { quantity: availableSize.quantity - item.quantity },
+            });
+          }
+        }
+
+        // Create the order
+        const order = await tx.order.create({
+          data: {
+            name: input.name,
+            email: input.email,
+            discord: input.discord,
+            orderedItems: {
+              create: input.products.map((product) => ({
+                productId: product.id,
+                size: product.size,
+                price: transformPriceToModel(product.price),
+                quantity: product.quantity,
+              })),
             },
           },
-        },
-      });
+        });
 
-      return {
-        id: order.id,
-      };
+        return {
+          type: "success" as const,
+          id: order.id,
+        };
+      });
     }),
-  updateProcessingState: protectedProcedure
-    .input(
-      z.object({
-        id: z.string(),
-        processingState: z.enum(["processing", "processed"]),
-      }),
-    )
+
+  cancelOrder: protectedProcedure
+    .input(z.object({ id: z.string() }))
     .mutation(async ({ ctx, input }) => {
-      const order = await ctx.prisma.order.findUnique({
-        where: {
-          id: input.id,
-        },
-        include: {
-          orderedItems: {
-            include: {
-              product: {
-                include: {
-                  availableSizes: true,
+      return await ctx.prisma.$transaction(async (tx) => {
+        const order = await tx.order.findUnique({
+          where: { id: input.id },
+          include: { orderedItems: true },
+        });
+
+        if (!order) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Order not found",
+          });
+        }
+
+        for (const item of order.orderedItems) {
+          if (item.size) {
+            const availableSize = await tx.availableSize.findFirst({
+              where: {
+                productId: item.productId,
+                productSize: {
+                  size: item.size,
+                },
+              },
+            });
+
+            if (availableSize) {
+              await tx.availableSize.update({
+                where: { id: availableSize.id },
+                data: { quantity: availableSize.quantity + item.quantity },
+              });
+            }
+          }
+        }
+
+        const updatedOrder = await tx.order.update({
+          where: { id: input.id },
+          data: { processingState: "cancelled" },
+          include: {
+            orderedItems: {
+              include: {
+                product: {
+                  include: {
+                    images: true,
+                  },
                 },
               },
             },
           },
-        },
+        });
+
+        return updatedOrder;
+      });
+    }),
+
+  updateProcessingState: protectedProcedure
+    .input(
+      z.object({
+        id: z.string(),
+        processingState: z.enum(["processing", "processed", "cancelled"]),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      // Get the current order state
+      const currentOrder = await ctx.prisma.order.findUnique({
+        where: { id: input.id },
+        include: { orderedItems: true },
       });
 
-      if (!order) {
+      if (!currentOrder) {
         throw new TRPCError({
           code: "NOT_FOUND",
           message: "Order not found",
         });
       }
 
-      for (const item of order.orderedItems) {
-        await ctx.prisma.availableSize.updateMany({
-          where: {
-            productId: item.productId,
-            productSizeId: item.size ?? undefined,
-          },
-          data: {
-            quantity: {
-              [input.processingState === "processing"
-                ? "increment"
-                : "decrement"]: item.quantity,
-            },
-          },
-        });
-      }
+      return await ctx.prisma.$transaction(async (tx) => {
+        // Moving from cancelled to processing/processed - decrement inventory
+        if (
+          currentOrder.processingState === "cancelled" &&
+          (input.processingState === "processing" ||
+            input.processingState === "processed")
+        ) {
+          for (const item of currentOrder.orderedItems) {
+            if (item.size) {
+              const availableSize = await tx.availableSize.findFirst({
+                where: {
+                  productId: item.productId,
+                  productSize: { size: item.size },
+                },
+              });
 
-      const updatedOrder = await ctx.prisma.order.update({
-        where: {
-          id: input.id,
-        },
-        data: {
-          processingState: input.processingState,
-        },
-        include: {
-          orderedItems: {
-            include: {
-              product: {
-                include: {
-                  availableSizes: true,
+              if (!availableSize || availableSize.quantity < item.quantity) {
+                throw new TRPCError({
+                  code: "BAD_REQUEST",
+                  message: `Not enough inventory for product ${item.productId} in size ${item.size}`,
+                });
+              }
+
+              // Decrement inventory
+              await tx.availableSize.update({
+                where: { id: availableSize.id },
+                data: { quantity: availableSize.quantity - item.quantity },
+              });
+            }
+          }
+        }
+
+        // Move from cancelled from processing/processed - increment inventory
+        else if (
+          (currentOrder.processingState === "processing" ||
+            currentOrder.processingState === "processed") &&
+          input.processingState === "cancelled"
+        ) {
+          for (const item of currentOrder.orderedItems) {
+            if (item.size) {
+              const availableSize = await tx.availableSize.findFirst({
+                where: {
+                  productId: item.productId,
+                  productSize: { size: item.size },
+                },
+              });
+
+              if (availableSize) {
+                // Increment inventory
+                await tx.availableSize.update({
+                  where: { id: availableSize.id },
+                  data: { quantity: availableSize.quantity + item.quantity },
+                });
+              }
+            }
+          }
+        }
+
+        // Update order status
+        const updatedOrder = await tx.order.update({
+          where: { id: input.id },
+          data: { processingState: input.processingState },
+          include: {
+            orderedItems: {
+              include: {
+                product: {
+                  include: { images: true },
                 },
               },
             },
           },
-        },
-      });
-
-      const _total = await getOrderTotal(input.id, ctx);
-      const total = _total?.[0]?.total;
-
-      if (!total || !updatedOrder) {
-        throw new TRPCError({
-          code: "INTERNAL_SERVER_ERROR",
-          message: "Could not update processing state",
         });
-      }
 
-      return { ...updatedOrder, total };
+        const _total = await getOrderTotal(input.id, ctx);
+        const total = _total?.[0]?.total;
+
+        if (total === undefined) {
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Failed to calculate order total",
+          });
+        }
+
+        return { ...updatedOrder, total };
+      });
     }),
 });
 

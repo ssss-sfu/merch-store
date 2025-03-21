@@ -16,46 +16,52 @@ import {
   TableRow,
 } from "@/ui/table";
 import { useState } from "react";
-import { Button } from "@/ui/button";
 import FetchResolver from "@/lib/components/FetchResolver";
 import { useRouter } from "next/router";
 import { Skeleton } from "~/lib/components/ui/skeleton";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/ui/select";
 
 export { getServerSideProps } from "~/utils/serverSideAuth";
 
-type ProcessState = "processing" | "processed";
-type Orders = RouterOutputs["order"]["getAll"];
+type ProcessState = "processing" | "processed" | "cancelled";
 
 export default function Orders() {
   const [processingState, setProcessState] =
     useState<ProcessState>("processing");
-  const handleProcessState = () =>
-    setProcessState((prev) => {
-      if (prev === "processing") {
-        return "processed";
-      }
 
-      return "processing";
-    });
+  const router = useRouter();
+
   const orderResponse = api.order.getAll.useQuery({
     processingState: processingState,
   });
-
-  const router = useRouter();
 
   return (
     <Layout>
       <DashboardHeader />
       <main>
-        <div className="flex justify-between">
+        <div className="flex items-center justify-between">
           <h2>Orders</h2>
-          <Button
-            onClick={handleProcessState}
-            variant="outline"
-            className="capitalize"
-          >
-            {processingState.toLowerCase()}
-          </Button>
+          <div className="w-48">
+            <Select
+              value={processingState}
+              onValueChange={(value) => setProcessState(value as ProcessState)}
+            >
+              <SelectTrigger className="capitalize">
+                <SelectValue placeholder="Select state" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="processing">Processing</SelectItem>
+                <SelectItem value="processed">Processed</SelectItem>
+                <SelectItem value="cancelled">Cancelled</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
         </div>
         <section>
           <div className="py-10">
@@ -64,11 +70,19 @@ export default function Orders() {
               loader={<Skeleton className="h-[500px] w-full" />}
             >
               {(data) => {
+                // Filter data based on current state
+                const filteredData =
+                  processingState === "cancelled"
+                    ? data.filter(
+                        (order) => order.processingState === "cancelled",
+                      )
+                    : data;
+
                 return (
                   // eslint-disable-next-line @typescript-eslint/no-explicit-any
                   <DataTable<Order, any>
                     columns={columns}
-                    data={data}
+                    data={filteredData}
                     onRowClicked={async (order) => {
                       await router.push(`./${order.id}`);
                     }}

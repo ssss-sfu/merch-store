@@ -153,7 +153,7 @@ export default function OrderConfirmation() {
                 <div className="mt-4 border-t border-gray-200 pt-4">
                   <div className="flex justify-between text-base font-medium text-gray-900">
                     <p>Total</p>
-                    <p>${orderData.total.toFixed(2)}</p>
+                    <p>${orderData.total}</p>
                   </div>
                 </div>
               </div>

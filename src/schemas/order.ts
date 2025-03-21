@@ -31,7 +31,7 @@ export const orderResponseSchema = z.object({
 export type OrderResponse = z.infer<typeof orderResponseSchema>;
 
 export const getAllOrdersSchema = z.object({
-  processingState: z.enum(["processing", "processed"]),
+  processingState: z.enum(["processing", "processed", "cancelled"]),
 });
 
 export const cartSchema = z
