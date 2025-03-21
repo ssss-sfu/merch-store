@@ -17,7 +17,10 @@ export default function Orders() {
         <div className="flex items-center justify-between">
           <h2>Product Management</h2>
           <div className="flex">
-            <Link href="add" className="rounded bg-violet-400 px-3 py-2">
+            <Link
+              href="add"
+              className="bg-primary hover:bg-primary/90 rounded px-3 py-2 text-white"
+            >
               Add Product
             </Link>
           </div>
@@ -41,7 +44,7 @@ export default function Orders() {
                   <Link
                     href={`./${product.id}`}
                     key={product.id}
-                    className="grid aspect-[3.5/4] grid-rows-[1fr_auto_auto_auto] items-center gap-2 rounded border-2 border-accent p-4"
+                    className="border-accent grid aspect-[3.5/4] grid-rows-[1fr_auto_auto_auto] items-center gap-2 rounded border-2 p-4"
                   >
                     <div className="relative h-full">
                       <Image
