@@ -48,16 +48,7 @@ export const editProductSchema = addProductSchema.extend({
 export type EditProduct = z.infer<typeof editProductSchema>;
 
 export const formSchema = z.object({
-  name: z.string().min(1),
-  images: z
-    .array(
-      z.object({
-        url: z.string().url("Invalid URL"),
-        id: z.string(),
-        description: z.string().min(0),
-      }),
-    )
-    .min(1, "At least one image is required"),
+  name: z.string().min(1, "Name is required"),
   price: z
     .string()
     .min(1)
@@ -69,20 +60,30 @@ export const formSchema = z.object({
         return str.match(new RegExp("^\\d*(\\.\\d{0,2})?$"));
       }),
     ),
-  sizes: z.record(
-    z.custom<Size>((val: string) => Object.keys(Size).includes(val)),
-    z.boolean(),
-  ),
-  quantity: z.record(
-    z.custom<Size>((val: string) => Object.keys(Size).includes(val)),
-    z.number(),
-  ),
-  about: z
-    .object({
+  images: z
+    .array(
+      z.object({
+        id: z.string(),
+        url: z.string(),
+        description: z.string(),
+      }),
+    )
+    .min(1, "At least one image is required"),
+  sizes: z
+    .record(z.boolean())
+    .refine(
+      (sizes) => Object.values(sizes).some((selected) => selected === true),
+      {
+        message: "At least one size must be selected",
+      },
+    ),
+  quantity: z.record(z.number().min(0, "Quantity must be 0 or greater")),
+  about: z.array(
+    z.object({
       id: z.string(),
-      description: z.string().min(1),
-    })
-    .array(),
+      description: z.string(),
+    }),
+  ),
   archived: z.boolean(),
 });
 

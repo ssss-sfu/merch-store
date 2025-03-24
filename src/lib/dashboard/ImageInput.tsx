@@ -6,7 +6,6 @@ import type { FieldErrors, FieldError } from "react-hook-form";
 import Image from "next/image";
 import React, { useState } from "react";
 import { Skeleton } from "@/ui/skeleton";
-import { useToast } from "@/lib/components/ui/use-toast";
 
 export interface ImageField {
   key: string;
@@ -30,7 +29,6 @@ export default function ImageInput({
   removeImage,
   setImageFields,
 }: ImageInputProps) {
-  const { toast } = useToast();
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
 
   const handleDragStart = (
@@ -82,11 +80,6 @@ export default function ImageInput({
 
   const handleRemoveImage = (index: number) => {
     removeImage(index);
-    toast({
-      title: "Image Removed",
-      description: `The image has been removed.`,
-      variant: "default",
-    });
   };
 
   return (

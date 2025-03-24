@@ -45,10 +45,37 @@ function Content() {
   });
 
   const [size, setSize] = useState<Size>();
-  const handleSize = (value: string) => setSize(value as Size);
+  const handleSize = (value: string) => {
+    setSize(value as Size);
+    setQuantity(1);
+  };
 
   const [quantity, setQuantity] = useState<number>(1);
-  const handleQuantity = (value: number) => setQuantity(value);
+  const handleQuantity = (value: number) => {
+    const availableStock = getAvailableStock();
+    setQuantity(Math.min(value, availableStock || 1));
+  };
+
+  const getAvailableStock = () => {
+    if (!product || !size) return 0;
+
+    const sizeItem = product.availableSizes.find(
+      (item) => item.productSize.size === size,
+    );
+
+    return sizeItem?.quantity ?? 0;
+  };
+
+  // Helper function to check if a size is in stock
+  const isSizeInStock = (sizeValue: string) => {
+    if (!product) return false;
+
+    const sizeItem = product.availableSizes.find(
+      (item) => item.productSize.size === sizeValue,
+    );
+
+    return (sizeItem?.quantity ?? 0) > 0;
+  };
 
   const addToCart = useSetAtom(addToCartAtom);
   const { toast } = useToast();
@@ -84,10 +111,22 @@ function Content() {
   const handleAddToCart = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
+    const availableStock = getAvailableStock();
+    const finalQuantity = Math.min(quantity, availableStock);
+
+    if (finalQuantity <= 0) {
+      toast({
+        title: "Cannot add to cart",
+        description: "This item is out of stock",
+        variant: "destructive",
+      });
+      return;
+    }
+
     addToCart({
       id: product.id,
       size: size,
-      quantity,
+      quantity: finalQuantity,
       price: product.price,
     });
 
@@ -114,7 +153,7 @@ function Content() {
               key={id}
               className={twMerge(
                 `aspect-square w-full overflow-hidden rounded-xl border-2 border-transparent object-cover transition-colors ${
-                  activeImage === url ? "border-2 border-primary" : ""
+                  activeImage === url ? "border-primary border-2" : ""
                 }`,
               )}
               onClick={() => setActiveImage(url)}
@@ -168,9 +207,14 @@ function Content() {
                       .sort(
                         (a, b) => sortedSize.indexOf(a) - sortedSize.indexOf(b),
                       )
-                      .map((size) => (
-                        <SelectItem key={size} value={size}>
-                          {size}
+                      .map((sizeValue) => (
+                        <SelectItem
+                          key={sizeValue}
+                          value={sizeValue}
+                          disabled={!isSizeInStock(sizeValue)}
+                        >
+                          {sizeValue}{" "}
+                          {!isSizeInStock(sizeValue) && "(Out of stock)"}
                         </SelectItem>
                       ))}
                   </SelectContent>
@@ -184,6 +228,7 @@ function Content() {
                 placeholder="Quantity"
                 step={1}
                 min={1}
+                max={getAvailableStock()}
                 value={quantity}
                 onChange={(e) => handleQuantity(Number(e.target.value))}
               />
@@ -193,7 +238,10 @@ function Content() {
             <Button
               variant="outline"
               className="bg-black text-white"
-              disabled={product.availableSizes.length > 0 && !size}
+              disabled={
+                product.availableSizes.length > 0 &&
+                (!size || getAvailableStock() === 0)
+              }
             >
               Add to Cart*
             </Button>

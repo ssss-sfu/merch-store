@@ -28,6 +28,7 @@ import {
   SelectValue,
 } from "@/ui/select";
 import { type ProcessingState } from "@prisma/client";
+import { toast } from "@/ui/use-toast";
 export { getServerSideProps } from "~/utils/serverSideAuth";
 
 export default function OrderId() {
@@ -46,8 +47,22 @@ export default function OrderId() {
         header: "Size",
       }),
       columnHelper.accessor("quantity", {
-        header: "Quantity (In Stock)",
+        header: "Purchased",
+        cell: (cell) => cell.getValue(),
       }),
+      columnHelper.accessor(
+        (row) => {
+          return (
+            row.product.availableSizes?.find(
+              (productSize) => productSize.productSizeId === row.size,
+            )?.quantity ?? "0"
+          );
+        },
+        {
+          id: "stockLeft",
+          header: "Stock Left",
+        },
+      ),
       columnHelper.accessor("price", {
         header: "Price",
         cell: (cell) => `$${cell.getValue() * cell.row.original.quantity}`,
@@ -57,11 +72,25 @@ export default function OrderId() {
     return columns;
   }, [orderQuery]);
 
-  const queryUtils = api.useContext();
+  const queryUtils = api.useUtils();
 
   const updateProcessingState = api.order.updateProcessingState.useMutation({
     onSuccess(data) {
-      queryUtils.order.get.setData(data.id, data);
+      void queryUtils.order.get.invalidate(data.id).catch((error) => {
+        console.error("Failed to invalidate order query:", error);
+      });
+
+      if (data.processingState === "cancelled") {
+        toast({
+          title: "Order cancelled",
+          description: "Inventory has been restored",
+        });
+      } else if (data.processingState === "processed") {
+        toast({
+          title: "Order processed",
+          description: "Order has been marked as processed",
+        });
+      }
     },
   });
 
@@ -97,6 +126,7 @@ export default function OrderId() {
                         <SelectContent>
                           <SelectItem value="processing">Processing</SelectItem>
                           <SelectItem value="processed">Processed</SelectItem>
+                          <SelectItem value="cancelled">Cancelled</SelectItem>
                         </SelectContent>
                       </Select>
                     </li>
@@ -176,19 +206,6 @@ function DataTable<TData, TValue>({
                 {row.getVisibleCells().map((cell) => (
                   <TableCell key={cell.id}>
                     {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                    {cell.column.id === "quantity" && (
-                      <span>
-                        (
-                        {(
-                          data[row.index] as OrderedItem
-                        ).product.availableSizes?.find(
-                          (productSize) =>
-                            productSize.productSizeId ===
-                            (data[row.index] as OrderedItem).size,
-                        )?.quantity ?? "0"}
-                        )
-                      </span>
-                    )}
                   </TableCell>
                 ))}
               </TableRow>

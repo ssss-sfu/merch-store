@@ -8,7 +8,7 @@ export default function FAQPage() {
     {
       question: "How will I pick it up?",
       answer:
-        "Join our Discord and you will be able to pick it up in person at the SFU Surrey campus. Once you join, please reach out to our executive team with your order details, and they will provide you with further instructions on where and when to collect your items.",
+        "Join our Discord. Once you join, please reach out to our executive team with your order details, and they will provide you with further instructions on where and when to collect your items. If no attempt has been made to pick up your order within a week, your order will be cancelled.",
     },
     {
       question: "How is payment done?",
@@ -24,16 +24,16 @@ export default function FAQPage() {
     <Layout>
       <Header />
       <main>
-        <section className="flex flex-col">
+        <section className="flex flex-col gap-12">
           {faqs.map((faq, index) => (
             <div
               key={index}
-              className="flex flex-col items-start gap-3 rounded-lg text-left"
+              className="flex flex-col items-start gap-2 rounded-lg text-left"
             >
               <h2 className="text-xl font-semibold text-gray-800">
                 {faq.question}
               </h2>
-              <p className="mt-2 text-gray-600">{faq.answer}</p>
+              <p className="text-gray-600">{faq.answer}</p>
             </div>
           ))}
         </section>

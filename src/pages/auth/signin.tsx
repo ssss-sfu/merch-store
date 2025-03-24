@@ -65,7 +65,7 @@ export default function SignIn() {
     window.location.href = casLoginUrl.toString();
   };
 
-  if (ticket && status === "loading") {
+  if (ticket) {
     return (
       <div className="flex min-h-screen items-center justify-center">
         <div className="text-center">
@@ -79,7 +79,7 @@ export default function SignIn() {
   return (
     <main className="fixed inset-0 grid place-items-center">
       <form
-        className="grid gap-4 rounded border-4 border-input p-6"
+        className="border-input grid gap-4 rounded border-4 p-6"
         onSubmit={onCredentialsSubmit}
       >
         <h1 className="mb-2 text-center text-2xl font-bold">Sign In</h1>
@@ -122,7 +122,7 @@ export default function SignIn() {
         </Button>
 
         {(error === "CredentialsSignin" || error === "SFUAuthFailed") && (
-          <p className="w-64 break-normal rounded bg-red-200 p-4 text-red-500">
+          <p className="w-64 rounded bg-red-200 p-4 break-normal text-red-500">
             {error === "SFUAuthFailed"
               ? "SFU authentication failed. Please try again."
               : "Invalid credentials. Please try again."}

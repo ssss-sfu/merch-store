@@ -16,6 +16,16 @@ export const productManagementRouter = createTRPCRouter({
   add: protectedProcedure
     .input(addProductSchema)
     .mutation(async ({ ctx, input }) => {
+      const selectedSizes = Object.entries(input.sizes).filter(
+        ([_, val]) => val,
+      );
+      if (selectedSizes.length === 0) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "At least one size must be selected",
+        });
+      }
+
       const data = await ctx.prisma.$transaction(async (prisma) => {
         const product = await prisma.product.create({
           data: {
@@ -56,9 +66,20 @@ export const productManagementRouter = createTRPCRouter({
 
       return data;
     }),
+
   edit: protectedProcedure
     .input(editProductSchema)
     .mutation(async ({ ctx, input }) => {
+      const selectedSizes = Object.entries(input.sizes).filter(
+        ([_, val]) => val,
+      );
+      if (selectedSizes.length === 0) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "At least one size must be selected",
+        });
+      }
+
       const updatedProduct = await ctx.prisma.$transaction(
         async (prisma) => {
           // Check if has be updated by someone else while viewing
