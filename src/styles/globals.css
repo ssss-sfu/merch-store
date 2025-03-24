@@ -1,4 +1,4 @@
-@import 'tailwindcss';
+@import "tailwindcss";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -86,20 +86,20 @@
 
 @layer utilities {
   @font-face {
-    font-family: 'DM Sans';
-    src: url('../../public/fonts/DMMono/DMMono-Light.ttf');
+    font-family: "DM Sans";
+    src: url("../../public/fonts/DMMono/DMMono-Light.ttf");
     font-weight: 300;
   }
 
   @font-face {
-    font-family: 'DM Mono';
-    src: url('../../public/fonts/DMMono/DMMono-Regular.ttf');
+    font-family: "DM Mono";
+    src: url("../../public/fonts/DMMono/DMMono-Regular.ttf");
     font-weight: 400;
   }
 
   @font-face {
-    font-family: 'DM Mono';
-    src: url('../../public/fonts/DMMono/DMMono-Medium.ttf');
+    font-family: "DM Mono";
+    src: url("../../public/fonts/DMMono/DMMono-Medium.ttf");
     font-weight: 500;
   }
 }

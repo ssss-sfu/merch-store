@@ -16,12 +16,12 @@ export default function InvalidAccount() {
 
   return (
     <main className="fixed inset-0 grid place-items-center">
-      <div className="grid gap-4 rounded border-4 border-input p-6 text-center">
+      <div className="border-input grid gap-4 rounded border-4 p-6 text-center">
         <h1 className="mb-2 text-center text-2xl font-bold">
           Invalid Permissions
         </h1>
 
-        <div className="w-96 break-normal rounded bg-red-200 p-4 text-red-500">
+        <div className="w-96 rounded bg-red-200 p-4 break-normal text-red-500">
           Oops! Your account does not have permissions to access this page.
           Please try a different account.
         </div>

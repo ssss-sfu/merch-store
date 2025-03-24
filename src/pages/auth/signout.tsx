@@ -14,7 +14,7 @@ export default function SignOut() {
   return (
     <main className="fixed inset-0 grid place-items-center">
       <form
-        className="grid gap-4 rounded border-4 border-input p-6"
+        className="border-input grid gap-4 rounded border-4 p-6"
         onSubmit={(e) => e.preventDefault()}
       >
         <h1 className="mb-2 text-center text-2xl font-bold">
