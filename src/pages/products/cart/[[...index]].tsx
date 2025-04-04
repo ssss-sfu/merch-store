@@ -230,7 +230,7 @@ function Content() {
 function ProductList({ cart }: { cart: CartItem[] }) {
   const { data: products } = api.product.getFromCart.useQuery(
     cart.map((item) => ({ id: item.id, size: item.size, price: item.price })),
-    { refetchOnWindowFocus: false, suspense: true },
+    { refetchOnWindowFocus: false, suspense: false },
   );
 
   return (
