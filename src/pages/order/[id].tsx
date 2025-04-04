@@ -33,17 +33,49 @@ export default function OrderConfirmation() {
     setTimeout(() => setCopied(false), 3000);
   };
 
+  const getOrderStatusContent = () => {
+    if (!orderData) return { title: "", message: "" };
+
+    switch (orderData.processingState) {
+      case "cancelled":
+        return {
+          title: "Order Cancelled",
+          message:
+            "This order was cancelled. Please make another purchase if this was a mistake.",
+          titleColor: "text-red-600",
+        };
+      case "processed":
+        return {
+          title: "Order Completed",
+          message:
+            "Thank you for shopping with us! Your order has been picked up.",
+          titleColor: "text-blue-600",
+        };
+      default:
+        return {
+          title: "Order Confirmed!",
+          message:
+            "Thank you for your order, an email will be sent to you shortly.",
+          titleColor: "text-green-600",
+        };
+    }
+  };
+
+  const { title, message, titleColor } = getOrderStatusContent();
+
   return (
     <Layout>
       <Header />
       <main className="flex flex-col items-center justify-center py-12">
         <div className="w-full max-w-2xl rounded-lg border border-gray-200 bg-white p-8 shadow-md">
           <div className="mb-6 text-center">
-            <h1 className="mb-2 text-2xl font-bold text-green-600">
-              Order Confirmed!
+            <h1
+              className={`mb-2 text-2xl font-bold ${titleColor ?? "text-green-600"}`}
+            >
+              {isLoading ? "Loading..." : title}
             </h1>
             <p className="text-balance text-gray-600">
-              Thank you for your order, an email will be sent to you shortly.
+              {isLoading ? "Please wait..." : message}
             </p>
           </div>
 
@@ -105,14 +137,6 @@ export default function OrderConfirmation() {
                     <span className="font-medium">Name:</span> {orderData.name}
                   </p>
                   <p className="text-gray-700">
-                    <span className="font-medium">Discord:</span>{" "}
-                    {orderData.discord}
-                  </p>
-                  <p className="text-gray-700">
-                    <span className="font-medium">Email:</span>{" "}
-                    {orderData.email}
-                  </p>
-                  <p className="text-gray-700">
                     <span className="font-medium">Date:</span>{" "}
                     {new Date(orderData.createdAt).toLocaleDateString()}
                   </p>
@@ -153,7 +177,7 @@ export default function OrderConfirmation() {
                 <div className="mt-4 border-t border-gray-200 pt-4">
                   <div className="flex justify-between text-base font-medium text-gray-900">
                     <p>Total</p>
-                    <p>${orderData.total}</p>
+                    <p>${orderData.total.toFixed(2)}</p>
                   </div>
                 </div>
               </div>
@@ -178,18 +202,22 @@ export default function OrderConfirmation() {
             </div>
           </div>
 
-          <div className="text-sm">
-            <p className="font-medium">Next Steps:</p>
-            <p className="mt-1">
-              Join our Discord and reach out to our executive team with your
-              order details. They will provide you with further instructions on
-              where and when to collect your items.
-            </p>
-            <p className="mt-2 font-medium">
-              Note: If no attempt has been made to pick up your order within a
-              week, your order will be cancelled.
-            </p>
-          </div>
+          {orderData &&
+            orderData.processingState !== "cancelled" &&
+            orderData.processingState !== "processed" && (
+              <div className="text-sm">
+                <p className="font-medium">Next Steps:</p>
+                <p className="mt-1">
+                  Join our Discord and reach out to our executive team with your
+                  order details. They will provide you with further instructions
+                  on where and when to collect your items.
+                </p>
+                <p className="mt-2 font-medium">
+                  Note: If no attempt has been made to pick up your order within
+                  a week, your order will be cancelled.
+                </p>
+              </div>
+            )}
         </div>
       </main>
       <Footer />

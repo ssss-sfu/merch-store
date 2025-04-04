@@ -236,8 +236,7 @@ function Content() {
           </div>
           <div className="flex flex-col gap-2">
             <Button
-              variant="outline"
-              className="bg-black text-white"
+              variant="default"
               disabled={
                 product.availableSizes.length > 0 &&
                 (!size || getAvailableStock() === 0)

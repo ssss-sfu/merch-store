@@ -64,7 +64,7 @@ function Content() {
     resolver: zodResolver(addFormOrderSchema),
     defaultValues: {
       name: "",
-      email: session?.user?.email ?? "SSSS-EXEC@TEST.COM",
+      email: session?.user?.email ?? "no-reply@sfussss.org",
       discord: "",
     },
   });
@@ -270,10 +270,27 @@ type CartItemComponentProps = {
 
 function CartItemComponent({ cart, product }: CartItemComponentProps) {
   const setQuantity = useSetAtom(updateCartItemQuantityAtom);
-  const handleQuantityChange = (id: string, quantity: number) =>
-    setQuantity({ id, quantity, size: cart.size });
-
   const removeFromCart = useSetAtom(removeFromCartAtom);
+  const { toast } = useToast();
+
+  const handleQuantityChange = (id: string, quantity: number) => {
+    const maxQuantity =
+      product?.type === "normal" && cart.size
+        ? (product.availableSizes?.find((sizeObj) => sizeObj.size === cart.size)
+            ?.quantity ?? 1)
+        : 1;
+
+    if (quantity > maxQuantity) {
+      toast({
+        title: "Maximum quantity reached",
+        description: `You cannot add more than ${maxQuantity} of this item.`,
+        variant: "destructive",
+      });
+      quantity = maxQuantity;
+    }
+
+    setQuantity({ id, quantity, size: cart.size });
+  };
 
   if (!product) {
     return (
@@ -290,6 +307,12 @@ function CartItemComponent({ cart, product }: CartItemComponentProps) {
       </li>
     );
   }
+
+  const maxQuantity =
+    product.type === "normal" && cart.size
+      ? (product.availableSizes?.find((sizeObj) => sizeObj.size === cart.size)
+          ?.quantity ?? 1)
+      : 1;
 
   return (
     <li>
@@ -310,6 +333,7 @@ function CartItemComponent({ cart, product }: CartItemComponentProps) {
               type="number"
               className="w-16"
               min={1}
+              max={maxQuantity + 1}
               onChange={(e) =>
                 handleQuantityChange(product.id, e.target.valueAsNumber)
               }
@@ -329,6 +353,7 @@ function CartItemComponent({ cart, product }: CartItemComponentProps) {
             </Button>
           </div>
         </div>
+
         {product.type === "archived" ? (
           <p>This product has been archived. Please remove from your cart.</p>
         ) : (
