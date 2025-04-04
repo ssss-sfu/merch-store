@@ -18,6 +18,7 @@ export default function SebCursor() {
       const windowWidth = window.innerWidth;
       const windowHeight = window.innerHeight;
 
+      // Cursor is offset from the mouse position, padding is adjusted for window
       const paddingTopX = windowWidth * 0.02; // Less padding at top-left
       const paddingBottomX = windowWidth * 0.12; // More padding at bottom-right
       const paddingTopY = windowHeight * 0.02; // Less padding at top
@@ -113,7 +114,7 @@ export default function SebCursor() {
             angle += deltaY * 0.1;
           }
 
-          const limitedRotation = Math.max(-20, Math.min(20, angle));
+          const limitedRotation = Math.max(-17.5, Math.min(17.5, angle));
 
           return Math.abs(limitedRotation - prevRotation) > 0.01
             ? limitedRotation
@@ -130,7 +131,7 @@ export default function SebCursor() {
 
   return (
     <Image
-      src={"/happy-seb-head.svg"}
+      src={"/happy-seb-head-b.svg"}
       width={60}
       height={60}
       alt="Seb head following cursor"

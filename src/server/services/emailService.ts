@@ -88,7 +88,10 @@ export async function sendOrderEmail(
       : (_total[0]?.total ?? 0);
 
   const config = emailConfig[status];
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? "http://localhost:3000";
+  const baseUrl =
+    process.env.NODE_ENV === "production"
+      ? `https://${process.env.VERCEL_URL}`
+      : "http://localhost:3000";
 
   const mailOptions = {
     from: process.env.EMAIL_USER ?? "no-reply@sfussss.org",
