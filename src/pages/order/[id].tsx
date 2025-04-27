@@ -188,8 +188,8 @@ export default function OrderConfirmation() {
             <div className="mt-6 flex flex-col gap-2">
               <Button
                 onClick={copyToClipboard}
-                className="w-full"
-                variant={copied ? "outline" : "default"}
+                className={`w-full ${copied ? "opacity-80 brightness-90" : ""}`}
+                variant={"default"}
               >
                 {copied ? "Copied!" : "Copy Order Link"}
               </Button>

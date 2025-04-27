@@ -54,7 +54,7 @@ export default function Header() {
 
   return (
     <header className="relative z-1 flex justify-between py-7">
-      <Link href="/products">
+      <Link href="/">
         <Logo />
       </Link>
 

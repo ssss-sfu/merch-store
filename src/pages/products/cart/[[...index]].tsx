@@ -80,6 +80,36 @@ function Content() {
 
   const { toast } = useToast();
   const router = useRouter();
+  const { data: products } = api.product.getFromCart.useQuery(
+    cart.map((item) => ({ id: item.id, size: item.size, price: item.price })),
+    { refetchOnWindowFocus: false },
+  );
+
+  const validateStock = () => {
+    if (!products)
+      return { valid: false, errors: ["Failed to validate stock"] };
+
+    const stockErrors: string[] = [];
+
+    cart.forEach((cartItem) => {
+      const product = products.find((p) => p.id === cartItem.id);
+
+      if (product?.type === "normal") {
+        const availableSize = product.availableSizes?.find(
+          (sizeObj) => sizeObj.size === cartItem.size,
+        );
+
+        if (availableSize && cartItem.quantity > availableSize.quantity) {
+          stockErrors.push(
+            `${product.name}${cartItem.size ? ` (${cartItem.size})` : ""} has only ${availableSize.quantity} items in stock, but ${cartItem.quantity} were requested`,
+          );
+        }
+      }
+    });
+
+    return { valid: stockErrors.length === 0, errors: stockErrors };
+  };
+
   const handleDialogOpen = (open: boolean) => {
     if (session === null) {
       router.push("/auth/signin");
@@ -93,6 +123,25 @@ function Content() {
       });
       return;
     }
+
+    if (open) {
+      const stockValidation = validateStock();
+      if (!stockValidation.valid) {
+        toast({
+          title: "Stock quantity exceeded",
+          description: (
+            <ul className="list-disc pl-4">
+              {stockValidation.errors.map((error, index) => (
+                <li key={index}>{error}</li>
+              ))}
+            </ul>
+          ),
+          variant: "destructive",
+        });
+        return;
+      }
+    }
+
     setIsModalOpen(open);
   };
   const placeOrderMutation = api.order.add.useMutation({

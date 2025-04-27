@@ -1,69 +1,85 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import Image from "next/image";
 
+const DESKTOP_OFFSET_X = 50;
+const DESKTOP_OFFSET_Y = 50;
+const SMOOTHING_FACTOR = 0.085;
+const MOBILE_SMOOTHING_FACTOR = 0.15;
+const MOBILE_BREAKPOINT = 768;
+
 export default function SebCursor() {
-  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
-  const [imagePosition, setImagePosition] = useState({ x: 0, y: 0 });
+  const [localMousePosition, setLocalMousePosition] = useState({
+    x: -100,
+    y: -100,
+  });
+  const [imagePosition, setImagePosition] = useState({ x: -100, y: -100 });
   const [rotation, setRotation] = useState(0);
   const [isVisible, setIsVisible] = useState(false);
+  const [isFlipped, setIsFlipped] = useState(false);
+  const [cursorImage, setCursorImage] = useState("/seb-default.svg");
 
-  const desktopOffsetX = 50; // X offset from cursor
-  const desktopOffsetY = 50; // Y offset down from cursor
-  const smoothingFactor = 0.075; // Lower = smoother/slower
-  const mobileSmoothingFactor = 0.15; // Mobile smoothing
-  const mobileBreakpoint = 768;
+  const previousMouseXRef = useRef<number>(-100);
+
+  // Initialize random cursor image on first load
+  useEffect(() => {
+    const sebIcons = [
+      "/seb-default.svg",
+      "/seb-coffee.svg",
+      "/seb-confused.svg",
+      "/seb-think.svg",
+    ];
+
+    const randomIcon = sebIcons[Math.floor(Math.random() * sebIcons.length)];
+    setCursorImage(randomIcon!);
+  }, []);
 
   useEffect(() => {
+    let visibilityTimeout: NodeJS.Timeout;
+    const showCursor = () => {
+      if (!isVisible) {
+        clearTimeout(visibilityTimeout);
+        visibilityTimeout = setTimeout(() => setIsVisible(true), 10);
+      }
+    };
+
     const handleMouseMove = (event: MouseEvent) => {
-      const windowWidth = window.innerWidth;
-      const windowHeight = window.innerHeight;
+      const { clientX, clientY } = event;
+      const { innerWidth: w, innerHeight: h } = window;
+      const padTopX = w * 0.02,
+        padBotX = w * 0.12;
+      const padTopY = h * 0.02,
+        padBotY = h * 0.12;
 
-      // Cursor is offset from the mouse position, padding is adjusted for window
-      const paddingTopX = windowWidth * 0.02; // Less padding at top-left
-      const paddingBottomX = windowWidth * 0.12; // More padding at bottom-right
-      const paddingTopY = windowHeight * 0.02; // Less padding at top
-      const paddingBottomY = windowHeight * 0.12; // More padding at bottom
-
-      const boundedX = Math.max(
-        paddingTopX,
-        Math.min(windowWidth - paddingBottomX, event.clientX),
-      );
-      const boundedY = Math.max(
-        paddingTopY,
-        Math.min(windowHeight - paddingBottomY, event.clientY),
-      );
-
-      setMousePosition({ x: boundedX, y: boundedY });
-      if (!isVisible) setIsVisible(true);
+      setLocalMousePosition({
+        x: Math.max(padTopX, Math.min(w - padBotX, clientX)),
+        y: Math.max(padTopY, Math.min(h - padBotY, clientY)),
+      });
+      showCursor();
     };
 
     const handleTouchMove = (event: TouchEvent) => {
       if (event.touches.length > 0) {
         const touch = event.touches[0];
-        const windowWidth = window.innerWidth;
-        const windowHeight = window.innerHeight;
+        if (!touch) return;
 
-        const paddingX = windowWidth * 0.05;
-        const paddingY = windowHeight * 0.05;
+        const { clientX, clientY } = touch;
+        const { innerWidth: w, innerHeight: h } = window;
+        const padX = w * 0.05,
+          padY = h * 0.05;
 
-        const boundedX = Math.max(
-          paddingX,
-          Math.min(windowWidth - paddingX, touch?.clientX ?? 0),
-        );
-        const boundedY = Math.max(
-          paddingY,
-          Math.min(windowHeight - paddingY, touch?.clientX ?? 0),
-        );
-
-        setMousePosition({ x: boundedX, y: boundedY });
-        if (!isVisible) setIsVisible(true);
+        setLocalMousePosition({
+          x: Math.max(padX, Math.min(w - padX, clientX)),
+          y: Math.max(padY, Math.min(h - padY, clientY)),
+        });
+        showCursor();
       }
     };
 
     window.addEventListener("mousemove", handleMouseMove);
-    window.addEventListener("touchmove", handleTouchMove);
+    window.addEventListener("touchmove", handleTouchMove, { passive: true });
 
     return () => {
+      clearTimeout(visibilityTimeout);
       window.removeEventListener("mousemove", handleMouseMove);
       window.removeEventListener("touchmove", handleTouchMove);
     };
@@ -71,76 +87,92 @@ export default function SebCursor() {
 
   useEffect(() => {
     let animationFrame: number;
+    let isAnimating = false;
 
     const followCursor = () => {
-      const isMobile = window.innerWidth < mobileBreakpoint;
+      const isMobile = window.innerWidth < MOBILE_BREAKPOINT;
+      let targetX: number, targetY: number;
+      const currentImageX = imagePosition.x;
+      const currentImageY = imagePosition.y;
+      let nextX: number, nextY: number;
+      let nextRotation: number;
 
       if (isMobile) {
-        const targetX = mousePosition.x + 30;
-        const targetY = mousePosition.y + 30;
+        targetX = localMousePosition.x + 30;
+        targetY = localMousePosition.y + 30;
+        nextX =
+          currentImageX + (targetX - currentImageX) * MOBILE_SMOOTHING_FACTOR;
+        nextY =
+          currentImageY + (targetY - currentImageY) * MOBILE_SMOOTHING_FACTOR;
 
-        setImagePosition((prev) => {
-          const nextX = prev.x + (targetX - prev.x) * mobileSmoothingFactor;
-          const nextY = prev.y + (targetY - prev.y) * mobileSmoothingFactor;
-          return { x: nextX, y: nextY };
-        });
-
-        setRotation((prevRotation) => {
-          const deltaX = targetX - imagePosition.x;
-          const angle = deltaX * 0.1;
-          const limitedRotation = Math.max(-10, Math.min(10, angle));
-
-          return Math.abs(limitedRotation - prevRotation) > 0.01
-            ? limitedRotation
-            : prevRotation;
-        });
+        const deltaX = targetX - nextX;
+        const angle = Math.max(-10, Math.min(10, deltaX * 0.1));
+        nextRotation = Math.abs(angle - rotation) > 0.01 ? angle : rotation;
       } else {
-        const targetX = mousePosition.x + desktopOffsetX;
-        const targetY = mousePosition.y + desktopOffsetY;
+        targetX = localMousePosition.x + DESKTOP_OFFSET_X;
+        targetY = localMousePosition.y + DESKTOP_OFFSET_Y;
+        nextX = currentImageX + (targetX - currentImageX) * SMOOTHING_FACTOR;
+        nextY = currentImageY + (targetY - currentImageY) * SMOOTHING_FACTOR;
 
-        setImagePosition((prev) => {
-          const nextX = prev.x + (targetX - prev.x) * smoothingFactor;
-          const nextY = prev.y + (targetY - prev.y) * smoothingFactor;
-          return { x: nextX, y: nextY };
-        });
-
-        setRotation((prevRotation) => {
-          const deltaX = targetX - imagePosition.x;
-          const deltaY = targetY - imagePosition.y;
-
-          let angle = deltaX * 0.2;
-
-          if (deltaY > 0) {
-            angle += deltaY * 0.1;
-          }
-
-          const limitedRotation = Math.max(-17.5, Math.min(17.5, angle));
-
-          return Math.abs(limitedRotation - prevRotation) > 0.01
-            ? limitedRotation
-            : prevRotation;
-        });
+        const deltaX = targetX - nextX;
+        const deltaY = targetY - nextY;
+        let angle = deltaX * 0.2 + (deltaY > 0 ? deltaY * 0.1 : 0);
+        angle = Math.max(-17.5, Math.min(17.5, angle));
+        nextRotation = Math.abs(angle - rotation) > 0.01 ? angle : rotation;
       }
 
-      animationFrame = requestAnimationFrame(followCursor);
+      setImagePosition({ x: nextX, y: nextY });
+      setRotation(nextRotation);
+
+      if (localMousePosition.x > previousMouseXRef.current) {
+        setIsFlipped(true);
+      } else if (localMousePosition.x < previousMouseXRef.current) {
+        setIsFlipped(false);
+      }
+      previousMouseXRef.current = localMousePosition.x;
+
+      const distanceToTarget = Math.sqrt(
+        Math.pow(targetX - nextX, 2) + Math.pow(targetY - nextY, 2),
+      );
+
+      isAnimating = distanceToTarget > 0.5;
+
+      if (isAnimating) {
+        animationFrame = requestAnimationFrame(followCursor);
+      }
     };
 
-    animationFrame = requestAnimationFrame(followCursor);
-    return () => cancelAnimationFrame(animationFrame);
-  }, [mousePosition]);
+    if (
+      localMousePosition.x >= 0 &&
+      localMousePosition.y >= 0 &&
+      !isAnimating
+    ) {
+      isAnimating = true;
+      animationFrame = requestAnimationFrame(followCursor);
+    }
+
+    return () => {
+      if (animationFrame) {
+        cancelAnimationFrame(animationFrame);
+      }
+    };
+  }, [localMousePosition, rotation, imagePosition]);
 
   return (
     <Image
-      src={"/happy-seb-head-b.svg"}
+      src={cursorImage}
       width={60}
       height={60}
-      alt="Seb head following cursor"
-      className={`pointer-events-none fixed ${isVisible ? "opacity-100" : "opacity-0"} transition-opacity duration-300`}
+      alt="My cursor"
+      className={`pointer-events-none fixed z-[1001] ${
+        isVisible ? "opacity-100" : "opacity-0"
+      } transition-opacity duration-100`}
       style={{
         left: `${imagePosition.x}px`,
         top: `${imagePosition.y}px`,
-        transform: `translate(-50%, -50%) rotate(${rotation}deg)`,
-        zIndex: 1000,
+        transform: `translate(-50%, -50%) rotate(${rotation}deg) scaleX(${
+          isFlipped ? -1 : 1
+        })`,
       }}
       priority
     />

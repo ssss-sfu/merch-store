@@ -6,7 +6,6 @@ import { Provider } from "jotai";
 import "~/styles/globals.css";
 import { Toaster } from "@/ui/toaster";
 import Head from "next/head";
-import SebCursor from "~/lib/components/SebCursor";
 
 const MyApp: AppType<{ session: Session | null }> = ({
   Component,
@@ -18,7 +17,6 @@ const MyApp: AppType<{ session: Session | null }> = ({
         <Head>
           <title>SSSS Merch</title>
         </Head>
-        <SebCursor />
         <Component {...pageProps} />
       </SessionProvider>
       <Toaster />
