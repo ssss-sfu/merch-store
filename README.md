@@ -57,7 +57,6 @@ Emails are sent through Resend, with logic implemented in `/server/servers/email
 
 Confirmation emails are sent when a user places an order and when their order status is changed.
 
-
 ## Frontend Backend communication
 
 Refer to the create t3 [docs](https://create.t3.gg/en/usage/trpc).
