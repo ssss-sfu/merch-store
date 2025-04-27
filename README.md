@@ -51,6 +51,12 @@ Authentication is handled by a library called [NextAuth](https://next-auth.js.or
 
 SFU Authentication is done through [SFU CAS](https://www.sfu.ca/information-systems/services/cas/cas-for-web-applications/), which provides the user with a CAS ticket, and validates it against SFU's CAS via an XML document. If ticket is valid, extract the id and email to a JWT, creating basic SFU auth for app.
 
+### Sending emails for order confirmation and status updates
+
+Emails are sent through Resend, with logic implemented in `/server/servers/emailservice.ts`.
+
+Confirmation emails are sent when a user places an order and when their order status is changed.
+
 ## Frontend Backend communication
 
 Refer to the create t3 [docs](https://create.t3.gg/en/usage/trpc).

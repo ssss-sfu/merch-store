@@ -13,6 +13,7 @@ import {
   transformPriceToView,
   transformProductsPriceToView,
 } from "@/lib/utils/price-transformer";
+import { sendEmail } from "../../services/emailService";
 
 type Order = {
   id: string;
@@ -97,7 +98,9 @@ export const orderRouter = createTRPCRouter({
 
     order.orderedItems = transformProductsPriceToView(order.orderedItems);
 
-    return { ...order, total };
+    const formattedTotal = typeof total === "bigint" ? Number(total) : total;
+
+    return { ...order, total: formattedTotal };
   }),
   add: publicProcedure
     .input(addOrderSchema)
@@ -161,7 +164,7 @@ export const orderRouter = createTRPCRouter({
       }
 
       // Start the transaction to ensure inventory
-      return await ctx.prisma.$transaction(async (tx) => {
+      const result = await ctx.prisma.$transaction(async (tx) => {
         // Check product availability and decrement inventory
         for (const item of input.products) {
           // If size is specified, check size-specific inventory
@@ -212,6 +215,16 @@ export const orderRouter = createTRPCRouter({
           id: order.id,
         };
       });
+
+      if (result.type === "success") {
+        try {
+          await sendEmail(result.id, ctx.prisma, "confirmed");
+        } catch (error) {
+          console.error("Failed to send confirmation email:", error);
+        }
+      }
+
+      return result;
     }),
 
   cancelOrder: protectedProcedure
@@ -266,6 +279,12 @@ export const orderRouter = createTRPCRouter({
           },
         });
 
+        try {
+          await sendEmail(input.id, ctx.prisma, "cancelled");
+        } catch (error) {
+          console.error("Failed to send cancellation email:", error);
+        }
+
         return updatedOrder;
       });
     }),
@@ -278,104 +297,111 @@ export const orderRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      // Get the current order state
-      const currentOrder = await ctx.prisma.order.findUnique({
-        where: { id: input.id },
-        include: { orderedItems: true },
-      });
-
-      if (!currentOrder) {
-        throw new TRPCError({
-          code: "NOT_FOUND",
-          message: "Order not found",
-        });
-      }
-
       return await ctx.prisma.$transaction(async (tx) => {
-        // Moving from cancelled to processing/processed - decrement inventory
-        if (
-          currentOrder.processingState === "cancelled" &&
-          (input.processingState === "processing" ||
-            input.processingState === "processed")
-        ) {
-          for (const item of currentOrder.orderedItems) {
-            if (item.size) {
-              const availableSize = await tx.availableSize.findFirst({
-                where: {
-                  productId: item.productId,
-                  productSize: { size: item.size },
-                },
-              });
-
-              if (!availableSize || availableSize.quantity < item.quantity) {
-                throw new TRPCError({
-                  code: "BAD_REQUEST",
-                  message: `Not enough inventory for product ${item.productId} in size ${item.size}`,
-                });
-              }
-
-              // Decrement inventory
-              await tx.availableSize.update({
-                where: { id: availableSize.id },
-                data: { quantity: availableSize.quantity - item.quantity },
-              });
-            }
-          }
-        }
-
-        // Move from cancelled from processing/processed - increment inventory
-        else if (
-          (currentOrder.processingState === "processing" ||
-            currentOrder.processingState === "processed") &&
-          input.processingState === "cancelled"
-        ) {
-          for (const item of currentOrder.orderedItems) {
-            if (item.size) {
-              const availableSize = await tx.availableSize.findFirst({
-                where: {
-                  productId: item.productId,
-                  productSize: { size: item.size },
-                },
-              });
-
-              if (availableSize) {
-                // Increment inventory
-                await tx.availableSize.update({
-                  where: { id: availableSize.id },
-                  data: { quantity: availableSize.quantity + item.quantity },
-                });
-              }
-            }
-          }
-        }
-
-        // Update order status
-        const updatedOrder = await tx.order.update({
+        // Get the current order state
+        const currentOrder = await ctx.prisma.order.findUnique({
           where: { id: input.id },
-          data: { processingState: input.processingState },
-          include: {
-            orderedItems: {
-              include: {
-                product: {
-                  include: { images: true },
-                },
-              },
-            },
-          },
+          include: { orderedItems: true },
         });
 
-        const _total = await getOrderTotal(input.id, ctx);
-        const total = _total?.[0]?.total;
-
-        if (total === undefined) {
+        if (!currentOrder) {
           throw new TRPCError({
-            code: "INTERNAL_SERVER_ERROR",
-            message: "Failed to calculate order total",
+            code: "NOT_FOUND",
+            message: "Order not found",
           });
         }
 
-        return { ...updatedOrder, total };
+        return await ctx.prisma.$transaction(async (tx) => {
+          if (
+            currentOrder.processingState === "cancelled" &&
+            (input.processingState === "processing" ||
+              input.processingState === "processed")
+          ) {
+            for (const item of currentOrder.orderedItems) {
+              if (item.size) {
+                const availableSize = await tx.availableSize.findFirst({
+                  where: {
+                    productId: item.productId,
+                    productSize: { size: item.size },
+                  },
+                });
+
+                if (!availableSize || availableSize.quantity < item.quantity) {
+                  throw new TRPCError({
+                    code: "BAD_REQUEST",
+                    message: `Not enough inventory for product ${item.productId} in size ${item.size}`,
+                  });
+                }
+
+                // Decrement inventory
+                await tx.availableSize.update({
+                  where: { id: availableSize.id },
+                  data: { quantity: availableSize.quantity - item.quantity },
+                });
+              }
+            }
+          }
+
+          // Move from cancelled from processing/processed - increment inventory
+          else if (
+            (currentOrder.processingState === "processing" ||
+              currentOrder.processingState === "processed") &&
+            input.processingState === "cancelled"
+          ) {
+            for (const item of currentOrder.orderedItems) {
+              if (item.size) {
+                const availableSize = await tx.availableSize.findFirst({
+                  where: {
+                    productId: item.productId,
+                    productSize: { size: item.size },
+                  },
+                });
+
+                if (availableSize) {
+                  // Increment inventory
+                  await tx.availableSize.update({
+                    where: { id: availableSize.id },
+                    data: { quantity: availableSize.quantity + item.quantity },
+                  });
+                }
+              }
+            }
+          }
+
+          // Update order status
+          const updatedOrder = await tx.order.update({
+            where: { id: input.id },
+            data: { processingState: input.processingState },
+            include: {
+              orderedItems: {
+                include: {
+                  product: {
+                    include: { images: true },
+                  },
+                },
+              },
+            },
+          });
+
+          try {
+            if (input.processingState === "processed") {
+              await sendEmail(input.id, ctx.prisma, "processed");
+            } else if (input.processingState === "cancelled") {
+              await sendEmail(input.id, ctx.prisma, "cancelled");
+            }
+          } catch (error) {
+            console.error("Failed to send status email:", error);
+          }
+
+          return updatedOrder;
+        });
       });
+    }),
+
+  sendOrderConfirmationEmail: publicProcedure
+    .input(z.object({ orderId: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      return await sendEmail(input.orderId, ctx.prisma, "confirmed");
     }),
 });
 

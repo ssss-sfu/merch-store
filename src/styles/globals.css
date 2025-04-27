@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import "tw-animate-css";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -37,20 +38,42 @@
   --animate-accordion-down: accordion-down 0.2s ease-out;
   --animate-accordion-up: accordion-up 0.2s ease-out;
 
+  --animate-float: float 6s ease-in-out infinite;
+  --animate-float-slow: float 8s ease-in-out infinite;
+  --animate-float-fast: float 4s ease-in-out infinite;
+
   @keyframes accordion-down {
     from {
       height: 0;
     }
+
     to {
       height: var(--radix-accordion-content-height);
     }
   }
+
   @keyframes accordion-up {
     from {
       height: var(--radix-accordion-content-height);
     }
+
     to {
       height: 0;
+    }
+  }
+
+  /* Add float keyframes */
+  @keyframes float {
+    0% {
+      transform: translate(0, 0);
+    }
+
+    50% {
+      transform: translate(0, -8px);
+    }
+
+    100% {
+      transform: translate(0, 0);
     }
   }
 }
@@ -58,10 +81,12 @@
 @utility container {
   margin-inline: auto;
   padding-inline: 2rem;
-  @media (width >= --theme(--breakpoint-sm)) {
+
+  @media (width >=--theme(--breakpoint-sm)) {
     max-width: none;
   }
-  @media (width >= 1400px) {
+
+  @media (width >=1400px) {
     max-width: 1400px;
   }
 }
@@ -174,7 +199,64 @@
   * {
     @apply border-border;
   }
+
   body {
     @apply bg-background text-foreground;
+  }
+}
+
+@keyframes subtle-float {
+  0% {
+    transform: translate(0, 0);
+  }
+
+  50% {
+    transform: translate(0, -2px);
+  }
+
+  100% {
+    transform: translate(0, 0);
+  }
+}
+
+@layer utilities {
+  .animate-subtle-float {
+    animation: subtle-float 8s ease-in-out infinite;
+  }
+
+  .animate-float {
+    animation: float 6s ease-in-out infinite;
+  }
+
+  .animate-float-slow {
+    animation: float 8s ease-in-out infinite;
+  }
+
+  .animate-float-fast {
+    animation: float 4s ease-in-out infinite;
+  }
+}
+
+@layer utilities {
+  .animate-float {
+    animation: var(--animate-float);
+  }
+
+  .animate-float-slow {
+    animation: var(--animate-float-slow);
+  }
+
+  .animate-float-fast {
+    animation: var(--animate-float-fast);
+  }
+}
+
+@keyframes fadeIn {
+  0% {
+    opacity: 0;
+  }
+
+  100% {
+    opacity: var(--opacity, 0.5);
   }
 }
