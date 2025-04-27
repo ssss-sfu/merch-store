@@ -20,7 +20,7 @@ const sebConfigurations = [
     idSuffix: "pos1",
     size: 55,
     initialClassName: "animate-float delay-0",
-    defaultPosition: { x: "10%", y: "10%" },
+    defaultPosition: { x: "10%", y: "12%" },
   },
   {
     idSuffix: "pos2",
