@@ -8,7 +8,7 @@ To join the committee, go to the [SSSS Discord server](https://discord.gg/XZUd7a
 
 View the live site here: https://merch.sfussss.org/
 
-The application is deployed on Vercel with a database hosted on Neon.tech.
+The application is deployed on Vercel with a serverless PostgreSQL database hosted on Neon.tech, and uses Vercel Cron Jobs to delete unprocessed orders.
 
 This is a [T3 Stack](https://create.t3.gg/) project bootstrapped with `create-t3-app`.
 
