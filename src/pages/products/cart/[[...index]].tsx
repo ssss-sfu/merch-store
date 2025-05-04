@@ -94,15 +94,35 @@ function Content() {
     cart.forEach((cartItem) => {
       const product = products.find((p) => p.id === cartItem.id);
 
-      if (product?.type === "normal") {
-        const availableSize = product.availableSizes?.find(
-          (sizeObj) => sizeObj.size === cartItem.size,
+      if (!product || product.type === "not-exist") {
+        stockErrors.push(
+          `Product no longer exists and has been removed from inventory`,
         );
+        return;
+      }
 
-        if (availableSize && cartItem.quantity > availableSize.quantity) {
-          stockErrors.push(
-            `${product.name}${cartItem.size ? ` (${cartItem.size})` : ""} has only ${availableSize.quantity} items in stock, but ${cartItem.quantity} were requested`,
+      if (product.type === "archived") {
+        stockErrors.push(
+          `${product.name} has been archived and is no longer available`,
+        );
+        return;
+      }
+
+      if (product?.type === "normal") {
+        if (cartItem.size) {
+          const availableSize = product.availableSizes?.find(
+            (sizeObj) => sizeObj.size === cartItem.size,
           );
+
+          if (!availableSize) {
+            stockErrors.push(
+              `${product.name}: Size ${cartItem.size} is no longer available`,
+            );
+          } else if (availableSize.quantity < cartItem.quantity) {
+            stockErrors.push(
+              `${product.name}${cartItem.size ? ` (${cartItem.size})` : ""} has only ${availableSize.quantity} items in stock, but ${cartItem.quantity} were requested`,
+            );
+          }
         }
       }
     });

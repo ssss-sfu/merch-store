@@ -31,7 +31,6 @@ async function validateCASTicket(ticket: string, serviceUrl: string) {
     const xml = await response.text();
     console.log(`[CAS] Response XML: ${xml}`);
 
-    // probably could improve this with a proper XML parser via a package
     if (xml.includes("<cas:authenticationSuccess>")) {
       const usernameMatch = xml.match(/<cas:user>(.*?)<\/cas:user>/);
       if (usernameMatch?.[1]) {
@@ -146,7 +145,6 @@ export const authOptions: NextAuthOptions = {
           if (validation.success) {
             const email = `${validation.username}@sfu.ca`;
 
-            // Server logging
             console.log("[CAS] User authenticated successfully:", {
               id: validation.username,
               name: validation.username,
@@ -170,7 +168,6 @@ export const authOptions: NextAuthOptions = {
   ],
   pages: {
     signIn: "/auth/signin",
-    signOut: "/auth/signout",
     error: "/auth/error",
   },
   debug: process.env.NODE_ENV === "development",

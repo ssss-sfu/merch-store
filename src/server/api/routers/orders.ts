@@ -131,6 +131,23 @@ export const orderRouter = createTRPCRouter({
           return accumulator;
         }
 
+        // Check if stock is sufficient
+        if (cartItem.size) {
+          const availableSize = targetProduct.availableSizes.find(
+            (as) => as.productSize.size === cartItem.size,
+          );
+
+          if (!availableSize) {
+            accumulator.push(
+              `Size ${cartItem.size} is not available for product ${targetProduct.name}`,
+            );
+          } else if (availableSize.quantity < cartItem.quantity) {
+            accumulator.push(
+              `Not enough stock for ${targetProduct.name} in size ${cartItem.size}. Only ${availableSize.quantity} available.`,
+            );
+          }
+        }
+
         const cartItemPrice = transformPriceToModel(cartItem.price);
         if (targetProduct.price !== cartItemPrice) {
           accumulator.push(
