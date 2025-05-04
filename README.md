@@ -1,12 +1,25 @@
-# Create T3 App
+# Software Systems Student Society Merch Store
+
+## Welcome
+
+Welcome to the Software Systems Student Society (SSSS) merch store repo. This project is maintained by the website committee.
+
+To join the committee, go to the [SSSS Discord server](https://discord.gg/XZUd7amxPq), find the `#what-are-committees`, and claim the `@website` role.
+
+View the live site here: https://merch.sfussss.org/
+
+The application is deployed on Vercel with a serverless PostgreSQL database hosted on Neon.tech, and uses Vercel Cron Jobs to delete unprocessed orders.
 
 This is a [T3 Stack](https://create.t3.gg/) project bootstrapped with `create-t3-app`.
 
 ## How to run
 
-Create a .env file with the contents of .env.example.
+Create a `.env` file with the contents of `.env.example`.
 
-Now you'll need to create an [uploadthing](https://uploadthing.com) account, create a project, and generate a key. Replace the value of UPLOADTHING_TOKEN in the .env with the generated key.
+Now you'll need to create an [uploadthing](https://uploadthing.com) account, create a project, and generate a key. Replace the value of `UPLOADTHING_TOKEN` in the `.env` with the generated key.
+
+(Optional to see confirmation emails)
+Now you'll need to create a [Resend](https://resend.com) account, create a project, and generate an API key. Add the API key to your `.env` file as `RESEND_API_KEY` and set `DEV_EMAIL_RECIPIENT` to your email address to receive them.
 
 Open a terminal window and run `docker compose up` to start the db container.
 

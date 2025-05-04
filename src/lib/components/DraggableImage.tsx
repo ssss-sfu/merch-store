@@ -9,7 +9,10 @@ export default function DraggableImage({
   boundsRef,
   initialPosition,
   initialClassName = "",
+  initialStyle,
   onPositionChange,
+  onDragStart,
+  onDragEnd,
   initialRotation = 0,
   rotationSensitivity = 8,
   maxRotation = 45,
@@ -23,7 +26,10 @@ export default function DraggableImage({
   boundsRef: React.RefObject<HTMLElement>;
   initialPosition: { x: number; y: number };
   initialClassName?: string;
+  initialStyle?: string;
   onPositionChange?: (position: { x: number; y: number }) => void;
+  onDragStart?: () => void;
+  onDragEnd?: () => void;
   initialRotation?: number;
   rotationSensitivity?: number;
   maxRotation?: number;
@@ -86,8 +92,9 @@ export default function DraggableImage({
 
       setIsDragging(true);
       previousPositionRef.current = positionPercent;
+      onDragStart?.();
     },
-    [boundsRef, positionPercent],
+    [boundsRef, positionPercent, onDragStart],
   );
 
   const handleMove = useCallback(
@@ -134,6 +141,7 @@ export default function DraggableImage({
 
     setIsDragging(false);
     onPositionChange?.(positionPercent);
+    onDragEnd?.();
 
     if (
       Math.abs(rotationVelocityRef.current) > 0.1 ||
@@ -153,6 +161,7 @@ export default function DraggableImage({
     positionPercent,
     animatePendulum,
     rotation,
+    onDragEnd,
   ]);
 
   useEffect(() => {
@@ -228,12 +237,14 @@ export default function DraggableImage({
         alt={alt}
         width={width}
         height={height}
-        className={initialClassName}
+        className={`draggable-image ${initialClassName}`}
         style={{
           display: "block",
           width: "100%",
           height: "100%",
           pointerEvents: "none",
+          opacity: 1,
+          ...(initialStyle ? { cssText: initialStyle } : {}),
         }}
         draggable={false}
         unoptimized

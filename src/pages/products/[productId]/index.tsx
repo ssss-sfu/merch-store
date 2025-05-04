@@ -84,10 +84,31 @@ function Content() {
 
   if (isLoading) {
     return (
-      <div className="grid h-[24rem] grid-cols-2 gap-4 px-4">
-        <Skeleton className="h-full w-full" />
-        <Skeleton className="h-full w-full" />
-      </div>
+      <main className="flex flex-col gap-6 px-4 py-6 md:flex-row md:justify-center md:gap-14">
+        <div className="flex w-full flex-col gap-4">
+          <Skeleton className="aspect-square w-full rounded-xl" />
+          <div className="grid grid-cols-6 gap-2">
+            {Array.from({ length: 3 }).map((_, i) => (
+              <Skeleton key={i} className="aspect-square w-full rounded-xl" />
+            ))}
+          </div>
+        </div>
+        <div className="flex w-full flex-col gap-6">
+          <div className="space-y-2">
+            <Skeleton className="h-6 w-2/3" />
+            <Skeleton className="h-5 w-1/4" />
+          </div>
+          <div className="space-y-3">
+            <Skeleton className="h-5 w-1/2" />
+            <Skeleton className="h-10 w-full" />
+          </div>
+          <div className="space-y-3">
+            <Skeleton className="h-5 w-1/2" />
+            <Skeleton className="h-10 w-full" />
+          </div>
+          <Skeleton className="h-10 w-full" />
+        </div>
+      </main>
     );
   }
 

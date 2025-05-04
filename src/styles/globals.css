@@ -62,7 +62,6 @@
     }
   }
 
-  /* Add float keyframes */
   @keyframes float {
     0% {
       transform: translate(0, 0);
@@ -70,6 +69,42 @@
 
     50% {
       transform: translate(0, -8px);
+    }
+
+    100% {
+      transform: translate(0, 0);
+    }
+  }
+
+  @keyframes float-alt {
+    0% {
+      transform: translate(0, 0);
+    }
+
+    40% {
+      transform: translate(0, -5px);
+    }
+
+    60% {
+      transform: translate(0, -6px);
+    }
+
+    100% {
+      transform: translate(0, 0);
+    }
+  }
+
+  @keyframes float-gentle {
+    0% {
+      transform: translate(0, 0);
+    }
+
+    45% {
+      transform: translate(0, -4px);
+    }
+
+    55% {
+      transform: translate(0, -4px);
     }
 
     100% {
@@ -225,15 +260,44 @@
   }
 
   .animate-float {
-    animation: float 6s ease-in-out infinite;
+    animation: float var(--float-duration, 6s) ease-in-out infinite;
+  }
+
+  .animate-float-alt {
+    animation: float-alt var(--float-duration, 7s) ease-in-out infinite;
+  }
+
+  .animate-float-gentle {
+    animation: float-gentle var(--float-duration, 9s) ease-in-out infinite;
   }
 
   .animate-float-slow {
-    animation: float 8s ease-in-out infinite;
+    animation: float var(--float-duration, 8s) ease-in-out infinite;
   }
 
   .animate-float-fast {
-    animation: float 4s ease-in-out infinite;
+    animation: float var(--float-duration, 4s) ease-in-out infinite;
+  }
+
+  /* Random delay classes */
+  .delay-random-1 {
+    animation-delay: 0.5s;
+  }
+
+  .delay-random-2 {
+    animation-delay: 1.2s;
+  }
+
+  .delay-random-3 {
+    animation-delay: 2.1s;
+  }
+
+  .delay-random-4 {
+    animation-delay: 3.3s;
+  }
+
+  .delay-random-5 {
+    animation-delay: 4.2s;
   }
 }
 
@@ -251,12 +315,17 @@
   }
 }
 
+.fade-in {
+  animation: fadeIn var(--fade-duration, 0.8s) ease-out forwards;
+  animation-delay: var(--fade-delay, 0s);
+}
+
 @keyframes fadeIn {
   0% {
     opacity: 0;
   }
 
   100% {
-    opacity: var(--opacity, 0.5);
+    opacity: var(--opacity, 0.8);
   }
 }

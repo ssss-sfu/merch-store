@@ -77,7 +77,7 @@ export async function sendOrderEmail(
   const config = emailConfig[status];
   const baseUrl =
     process.env.NODE_ENV === "production"
-      ? `https://merch.sfussss.org/`
+      ? `https://merch.sfussss.org`
       : "http://localhost:3000";
 
   const htmlContent = `
@@ -354,9 +354,12 @@ export async function sendOrderEmail(
     const { data, error } = await resend.emails.send({
       from:
         process.env.NODE_ENV === "production"
-          ? (process.env.EMAIL_FROM ?? "merch@sfussss.org")
+          ? (process.env.EMAIL_FROM ?? "onboarding@resend.dev")
           : "onboarding@resend.dev",
-      to: order.email,
+      to:
+        process.env.NODE_ENV === "production"
+          ? order.email
+          : (process.env.DEV_EMAIL_RECIPIENT ?? order.email),
       subject: config.subject,
       html: htmlContent,
     });
