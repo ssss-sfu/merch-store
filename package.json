@@ -52,9 +52,9 @@
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-hook-form": "^7.53.2",
+    "resend": "^4.4.1",
     "superjson": "2.2.1",
     "tailwind-merge": "^2.5.4",
-    "tailwindcss-animate": "^1.0.7",
     "uploadthing": "^7.4.4",
     "uuid": "^9.0.1",
     "zod": "^3.22.4"
@@ -78,6 +78,7 @@
     "prisma": "^5.21.1",
     "tailwindcss": "^4.0.14",
     "tsx": "^4.19.2",
+    "tw-animate-css": "^1.2.5",
     "typescript": "^5.5.4"
   },
   "ct3aMetadata": {

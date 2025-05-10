@@ -60,7 +60,7 @@ function Product({
         <Image
           priority={true}
           fill
-          sizes="(min-width: 640px): 100vw, 20vw"
+          sizes="(min-width: 640px): 100vw, 50vw"
           className="mb-3 h-full w-full overflow-hidden rounded-xl object-cover"
           src={images[0]?.url ?? ""}
           alt={images[0]?.description ?? name}
