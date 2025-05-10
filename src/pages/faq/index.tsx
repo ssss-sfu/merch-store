@@ -7,8 +7,11 @@ export default function FAQPage() {
   const faqs = [
     {
       question: "How will I pick it up?",
-      answer:
-        "Join our Discord. Once you join, please reach out to our executive team with your order details, and they will provide you with further instructions on where and when to collect your items. If no attempt has been made to pick up your order within a week, your order will be cancelled.",
+      answer: `These items will be stored at the SSSS office (Room 4016) at the Surrey campus and will only be available for pickup at
+        Surrey campus or delivery on select days to Burnaby campus (subject to change). \n\n
+        If you are not already in the SSSS Discord, we encourage you to join! You can receive regular updates on union
+        activities and events, and it will be easier to contact you. Be sure to check out the #merch-sales channel for
+        specifics!`,
     },
     {
       question: "How is payment done?",

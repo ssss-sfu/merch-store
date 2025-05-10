@@ -64,7 +64,7 @@ function Content() {
     resolver: zodResolver(addFormOrderSchema),
     defaultValues: {
       name: "",
-      email: session?.user?.email ?? "SSSS-EXEC@TEST.COM",
+      email: session?.user?.email ?? "no-reply@sfussss.org",
       discord: "",
     },
   });
@@ -80,6 +80,56 @@ function Content() {
 
   const { toast } = useToast();
   const router = useRouter();
+  const { data: products } = api.product.getFromCart.useQuery(
+    cart.map((item) => ({ id: item.id, size: item.size, price: item.price })),
+    { refetchOnWindowFocus: false },
+  );
+
+  const validateStock = () => {
+    if (!products)
+      return { valid: false, errors: ["Failed to validate stock"] };
+
+    const stockErrors: string[] = [];
+
+    cart.forEach((cartItem) => {
+      const product = products.find((p) => p.id === cartItem.id);
+
+      if (!product || product.type === "not-exist") {
+        stockErrors.push(
+          `Product no longer exists and has been removed from inventory`,
+        );
+        return;
+      }
+
+      if (product.type === "archived") {
+        stockErrors.push(
+          `${product.name} has been archived and is no longer available`,
+        );
+        return;
+      }
+
+      if (product?.type === "normal") {
+        if (cartItem.size) {
+          const availableSize = product.availableSizes?.find(
+            (sizeObj) => sizeObj.size === cartItem.size,
+          );
+
+          if (!availableSize) {
+            stockErrors.push(
+              `${product.name}: Size ${cartItem.size} is no longer available`,
+            );
+          } else if (availableSize.quantity < cartItem.quantity) {
+            stockErrors.push(
+              `${product.name}${cartItem.size ? ` (${cartItem.size})` : ""} has only ${availableSize.quantity} items in stock, but ${cartItem.quantity} were requested`,
+            );
+          }
+        }
+      }
+    });
+
+    return { valid: stockErrors.length === 0, errors: stockErrors };
+  };
+
   const handleDialogOpen = (open: boolean) => {
     if (session === null) {
       router.push("/auth/signin");
@@ -93,6 +143,25 @@ function Content() {
       });
       return;
     }
+
+    if (open) {
+      const stockValidation = validateStock();
+      if (!stockValidation.valid) {
+        toast({
+          title: "Stock quantity exceeded",
+          description: (
+            <ul className="list-disc pl-4">
+              {stockValidation.errors.map((error, index) => (
+                <li key={index}>{error}</li>
+              ))}
+            </ul>
+          ),
+          variant: "destructive",
+        });
+        return;
+      }
+    }
+
     setIsModalOpen(open);
   };
   const placeOrderMutation = api.order.add.useMutation({
@@ -230,7 +299,7 @@ function Content() {
 function ProductList({ cart }: { cart: CartItem[] }) {
   const { data: products } = api.product.getFromCart.useQuery(
     cart.map((item) => ({ id: item.id, size: item.size, price: item.price })),
-    { refetchOnWindowFocus: false, suspense: true },
+    { refetchOnWindowFocus: false, suspense: false },
   );
 
   return (
@@ -270,10 +339,27 @@ type CartItemComponentProps = {
 
 function CartItemComponent({ cart, product }: CartItemComponentProps) {
   const setQuantity = useSetAtom(updateCartItemQuantityAtom);
-  const handleQuantityChange = (id: string, quantity: number) =>
-    setQuantity({ id, quantity, size: cart.size });
-
   const removeFromCart = useSetAtom(removeFromCartAtom);
+  const { toast } = useToast();
+
+  const handleQuantityChange = (id: string, quantity: number) => {
+    const maxQuantity =
+      product?.type === "normal" && cart.size
+        ? (product.availableSizes?.find((sizeObj) => sizeObj.size === cart.size)
+            ?.quantity ?? 1)
+        : 1;
+
+    if (quantity > maxQuantity) {
+      toast({
+        title: "Maximum quantity reached",
+        description: `You cannot add more than ${maxQuantity} of this item.`,
+        variant: "destructive",
+      });
+      quantity = maxQuantity;
+    }
+
+    setQuantity({ id, quantity, size: cart.size });
+  };
 
   if (!product) {
     return (
@@ -290,6 +376,12 @@ function CartItemComponent({ cart, product }: CartItemComponentProps) {
       </li>
     );
   }
+
+  const maxQuantity =
+    product.type === "normal" && cart.size
+      ? (product.availableSizes?.find((sizeObj) => sizeObj.size === cart.size)
+          ?.quantity ?? 1)
+      : 1;
 
   return (
     <li>
@@ -310,6 +402,7 @@ function CartItemComponent({ cart, product }: CartItemComponentProps) {
               type="number"
               className="w-16"
               min={1}
+              max={maxQuantity + 1}
               onChange={(e) =>
                 handleQuantityChange(product.id, e.target.valueAsNumber)
               }
@@ -329,6 +422,7 @@ function CartItemComponent({ cart, product }: CartItemComponentProps) {
             </Button>
           </div>
         </div>
+
         {product.type === "archived" ? (
           <p>This product has been archived. Please remove from your cart.</p>
         ) : (

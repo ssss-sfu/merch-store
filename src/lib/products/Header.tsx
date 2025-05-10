@@ -4,7 +4,7 @@ import { IconCart } from "@/lib/components/icons/icon-cart";
 import { useAtom } from "jotai";
 import { cartCountAtom } from "@/lib/products/cartStore";
 import { useEffect, useState, useMemo } from "react";
-import { useSession } from "next-auth/react";
+import { useSession, signOut } from "next-auth/react";
 import { Menu, X } from "lucide-react";
 import { useRouter } from "next/router";
 
@@ -25,17 +25,22 @@ export default function Header() {
     setIsMenuOpen(!isMenuOpen);
   };
 
+  const handleSignOut = (e: React.MouseEvent) => {
+    e.preventDefault();
+    signOut({ callbackUrl: "/products" }).catch((error) => {
+      console.error("Sign out failed:", error);
+    });
+  };
+
   const navLinks = isClient
     ? [
         { href: "/products", label: "Shop" },
         { href: "/faq", label: "FAQ" },
         { href: "https://www.sfussss.org/", label: "SSSS", target: "_blank" },
         {
-          href:
-            status === "authenticated"
-              ? "/api/auth/signout"
-              : "/api/auth/signin",
+          href: status === "authenticated" ? "#" : "/api/auth/signin",
           label: status === "authenticated" ? "Sign Out" : "Sign In",
+          onClick: status === "authenticated" ? handleSignOut : undefined,
         },
       ]
     : [];
@@ -48,8 +53,8 @@ export default function Header() {
   };
 
   return (
-    <header className="relative flex justify-between py-7">
-      <Link href="/products">
+    <header className="relative z-1 flex justify-between py-7">
+      <Link href="/">
         <Logo />
       </Link>
 
@@ -79,6 +84,7 @@ export default function Header() {
                 }`}
                 href={link.href}
                 target={link.target}
+                onClick={link.onClick}
               >
                 {link.label}
               </Link>
@@ -101,6 +107,7 @@ export default function Header() {
         </ul>
       </nav>
 
+      {/* Mobile menu */}
       {isClient && isMenuOpen && (
         <div className="fixed inset-0 z-10 bg-white pt-24 sm:hidden">
           <nav className="container mx-auto px-4">
@@ -113,7 +120,10 @@ export default function Header() {
                     }`}
                     href={link.href}
                     target={link.target}
-                    onClick={() => setIsMenuOpen(false)}
+                    onClick={(e) => {
+                      setIsMenuOpen(false);
+                      if (link.onClick) link.onClick(e);
+                    }}
                   >
                     {link.label}
                   </Link>

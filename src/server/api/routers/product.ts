@@ -121,6 +121,10 @@ export const productRouter = createTRPCRouter({
           id: targetProduct.id,
           images: targetProduct.images,
           name: targetProduct.name,
+          availableSizes: targetProduct.availableSizes.map((size) => ({
+            size: size.productSize.size,
+            quantity: size.quantity,
+          })),
           errors,
         };
       });
