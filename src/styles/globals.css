@@ -322,10 +322,10 @@
 
 @keyframes fadeIn {
   0% {
-    opacity: 0;
+    opacity: var(--opacity-start, 0.5);
   }
 
   100% {
-    opacity: var(--opacity, 0.8);
+    opacity: var(--opacity-end, 0.8);
   }
 }

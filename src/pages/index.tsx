@@ -135,12 +135,14 @@ const getRandomFadeStyle = () => {
   const fadeDuration = (Math.random() * 1.2 + 0.3).toFixed(2);
   const fadeDelay = (Math.random() * 0.3).toFixed(2);
   const floatDuration = (4 + Math.random() * 4).toFixed(2);
-  return `--fade-duration: ${fadeDuration}s; --fade-delay: ${fadeDelay}s; --float-duration: ${floatDuration}s;`;
+  const opacityStart = (0.2 + Math.random() * 0.3).toFixed(2);
+  const opacityEnd = (0.8 + Math.random() * 0.2).toFixed(2);
+  return `--fade-duration: ${fadeDuration}s; --fade-delay: ${fadeDelay}s; --float-duration: ${floatDuration}s; --opacity-start: ${opacityStart}; --opacity-end: ${opacityEnd};`;
 };
 
 const getRandomPendulumProps = () => ({
-  pendulumDamping: 0.96 + Math.random() * 0.04,
-  pendulumStiffness: 0.005 + Math.random() * 0.008,
+  pendulumDamping: 0.98 + Math.random() * 0.01, // Higher damping for smoother motion (less jitter)
+  pendulumStiffness: 0.002 + Math.random() * 0.003, // Lower stiffness for gentler swinging
 });
 
 interface SebIcon {
@@ -251,7 +253,7 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
-    if (!isHydrated) return; // Don't save during server-side rendering or before hydration
+    if (!isHydrated) return;
 
     try {
       localStorage.setItem("customIcons", JSON.stringify(icons.custom));
@@ -317,7 +319,7 @@ export default function Home() {
       availableSebBaseNames[
         Math.floor(Math.random() * availableSebBaseNames.length)
       ];
-    const randomSize = 40 + Math.floor(Math.random() * 30); // 40-69
+    const randomSize = 40 + Math.floor(Math.random() * 30);
     const newId = `custom-seb-${Date.now()}-${Math.random().toString(36).substring(7)}`;
     const randomProps = getRandomPendulumProps();
 
