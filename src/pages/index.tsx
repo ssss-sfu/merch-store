@@ -136,7 +136,7 @@ const getRandomFadeStyle = () => {
   const fadeDelay = (Math.random() * 0.3).toFixed(2);
   const floatDuration = (4 + Math.random() * 4).toFixed(2);
   const opacityStart = (0.2 + Math.random() * 0.3).toFixed(2);
-  const opacityEnd = (0.8 + Math.random() * 0.2).toFixed(2);
+  const opacityEnd = (0.5 + Math.random() * 0.2).toFixed(2);
   return `--fade-duration: ${fadeDuration}s; --fade-delay: ${fadeDelay}s; --float-duration: ${floatDuration}s; --opacity-start: ${opacityStart}; --opacity-end: ${opacityEnd};`;
 };
 
@@ -395,7 +395,7 @@ export default function Home() {
             />
           ))}
 
-        {/* Central Content */}
+        {/* Items in the center  */}
         <div className="pointer-events-none relative z-20 flex w-max max-w-3xl flex-col items-center rounded-3xl text-center">
           <div className="bg-background/35 pointer-events-none absolute -inset-4 -z-10 blur-lg sm:-inset-6"></div>
           <h1 className="text-foreground pointer-events-auto mb-3 font-mono text-5xl font-bold tracking-tight sm:text-6xl md:text-7xl">

@@ -72,7 +72,7 @@ Confirmation emails are sent when a user places an order and when their order st
 
 ### Stale Order Cancellation
 
-Orders that are not processed within a week are automatically cancelled. This is done through a cron job that runs every 24 hours. The cron job is implemented in `/vercel.json` and the api route it calls is located at `/src/parges/api/cron/cancel-orders.ts`. You can test the api route by running `curl -X POST http://localhost:3000/api/cron/cancel-orders -H "x-api-key: API_KEY"`.
+Orders that are not processed within a week are automatically cancelled. This is done through a cron job that runs every 24 hours. The cron job is implemented in `/vercel.json` and the api route it calls is located at `/src/parges/api/cron/cancel-orders.ts`. You can test the api route, locally by running `curl -X POST http://localhost:3000/api/cron/cancel-orders -H "x-api-key: API_KEY"`.
 
 ## Frontend Backend communication
 

@@ -282,7 +282,7 @@ export async function sendOrderEmail(
                           IMPORTANT:
                           These items will be stored at the SSSS office (Room 4016) at the Surrey campus and will only be available for pickup at Surrey campus or delivery on select days to Burnaby campus (subject to change). <br/><br/>
 
-                          If you are not already in the SSSS Discord, we encourage you to join! You can receive regular updates on union activities and events, and it will be easier to contact you. Be sure to check out the #merch-sales channel for specifics!
+                          If you are not already in the SSSS Discord, we encourage you to join! You can receive regular updates on union activities and events, and it will be easier to contact you. Be sure to check out the <strong>#merch-sales</strong> channel for specifics by adding it to your Channels through Discord's Channel list feature! You may also directly DM <strong>@${process.env.NEXT_PUBLIC_DISCORD_TAG}</strong> on Discord!
                         </p>
                         <p class="note">
                           Note: If no attempt has been made to pick up your order within 2 weeks,
