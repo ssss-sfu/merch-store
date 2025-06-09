@@ -22,12 +22,12 @@ export default function FAQPage() {
           join! You can receive regular updates on union activities and events,
           and it will be easier to contact you. Be sure to check out the{" "}
           <span className="font-medium">#merch-sales</span> channel for
-          specifics! You can get the channel by selecting the "Browse Channels"
-          tab in the SSSS discord and selecting the channel. You may also
-          directly dm{" "}
+          specifics! You can get the channel by selecting the &ldquo;Browse
+          Channels&rdquo; tab in the SSSS discord and selecting the channel. You
+          may also directly dm{" "}
           <span className="font-medium">
             @
-            {process.env.NEXT_PUBLIC_DISCORD_TAG || "DISCORD TAG IS NOT SET UP"}
+            {process.env.NEXT_PUBLIC_DISCORD_TAG ?? "DISCORD TAG IS NOT SET UP"}
           </span>{" "}
           on Discord about your order!
         </>
