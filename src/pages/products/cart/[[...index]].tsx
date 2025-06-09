@@ -229,7 +229,7 @@ function Content() {
         </div>
 
         <div className="md:max-w-[30%]">
-          <h2 className="pb-8 text-xl font-medium">Total</h2>
+          <h2 className="pb-5 text-xl font-medium">Total</h2>
           <p className="pb-4 text-3xl">
             <Suspense fallback={<>$0.00</>}>
               <TotalPrice cart={cart} />
@@ -395,7 +395,7 @@ function CartItemComponent({ cart, product }: CartItemComponentProps) {
           alt={product.name}
         />
         <div>
-          <h3 className="pb-4 font-medium">{product.name}</h3>
+          <h3 className="pb-2 font-medium">{product.name}</h3>
           <div className="flex items-center gap-2 text-sm">
             <label>Quantity:</label>
             <Input

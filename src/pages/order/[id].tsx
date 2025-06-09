@@ -9,16 +9,48 @@ import Link from "next/link";
 import { api } from "~/utils/api";
 import Image from "next/image";
 import { Skeleton } from "~/lib/components/ui/skeleton";
+import { useSession } from "next-auth/react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/ui/select";
+import { type ProcessingState } from "@prisma/client";
 
 export default function OrderConfirmation() {
   const router = useRouter();
   const { id } = router.query;
   const { toast } = useToast();
   const [copied, setCopied] = useState(false);
+  const { data: session } = useSession();
+  const isAdmin = !session?.user.email?.endsWith("@sfu.ca");
 
   const { data: orderData, isLoading } = api.order.get.useQuery(id as string, {
     enabled: !!id,
     refetchOnWindowFocus: false,
+  });
+
+  const queryUtils = api.useUtils();
+  const updateProcessingState = api.order.updateProcessingState.useMutation({
+    onSuccess(data) {
+      void queryUtils.order.get.invalidate(data.id).catch((error) => {
+        console.error("Failed to invalidate order query:", error);
+      });
+
+      if (data.processingState === "cancelled") {
+        toast({
+          title: "Order cancelled",
+          description: "Inventory has been restored",
+        });
+      } else if (data.processingState === "processed") {
+        toast({
+          title: "Order processed",
+          description: "Order has been marked as processed",
+        });
+      }
+    },
   });
 
   const copyToClipboard = () => {
@@ -77,6 +109,30 @@ export default function OrderConfirmation() {
             <p className="text-balance text-gray-600">
               {isLoading ? "Please wait..." : message}
             </p>
+            {isAdmin && orderData && (
+              <div className="mt-4 flex items-center justify-center gap-2">
+                <span className="text-sm font-medium">Admin Controls:</span>
+                <Select
+                  value={orderData.processingState}
+                  onValueChange={(state: ProcessingState) => {
+                    updateProcessingState.mutate({
+                      id: orderData.id,
+                      processingState: state,
+                    });
+                  }}
+                  disabled={updateProcessingState.isLoading}
+                >
+                  <SelectTrigger className="w-32">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="processing">Processing</SelectItem>
+                    <SelectItem value="processed">Processed</SelectItem>
+                    <SelectItem value="cancelled">Cancelled</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
           </div>
 
           <div className="mb-6 rounded-lg">

@@ -19,6 +19,7 @@ import Image from "next/image";
 import { DisclaimerText } from "@/lib/products/DisclaimerText";
 import { Skeleton } from "~/lib/components/ui/skeleton";
 import { twMerge } from "tailwind-merge";
+import { ShoppingCart } from "lucide-react";
 
 type Size = RouterInputs["order"]["add"]["products"][number]["size"];
 
@@ -80,7 +81,8 @@ function Content() {
   const addToCart = useSetAtom(addToCartAtom);
   const { toast } = useToast();
 
-  const [activeImage, setActiveImage] = useState<string | undefined>();
+  const [activeImage, setActiveImage] = useState<string | undefined>("");
+  const [addedToCart, setAddedToCart] = useState(false);
 
   if (isLoading) {
     return (
@@ -151,6 +153,11 @@ function Content() {
       price: product.price,
     });
 
+    setAddedToCart(true);
+    setTimeout(() => {
+      setAddedToCart(false);
+    }, 2000);
+
     toast({
       title: "Added to cart",
       description: `${product.name} was added to your cart`,
@@ -173,7 +180,7 @@ function Content() {
             <button
               key={id}
               className={twMerge(
-                `aspect-square w-full overflow-hidden rounded-xl border-2 border-transparent object-cover transition-colors ${
+                `hover:border-accent aspect-square w-full cursor-pointer overflow-hidden rounded-xl border-2 border-transparent object-cover transition-colors ${
                   activeImage === url ? "border-primary border-2" : ""
                 }`,
               )}
@@ -195,17 +202,16 @@ function Content() {
         className="flex w-full flex-col gap-y-8 md:gap-y-16"
         onSubmit={handleAddToCart}
       >
-        <section className="md:pt-8">
-          <h1 className="text-2xl font-medium">{product.name}</h1>
-          <span className="text-lg">${priceLabel}</span>
+        <section className="flex flex-col gap-4">
+          <h1 className="text-3xl font-medium">{product.name}</h1>
+          <span className="text-xl">${priceLabel}</span>
         </section>
         {!!product.aboutProducts.length && (
           <section>
-            <h2>About this product</h2>
             <ul>
               {product.aboutProducts.map(({ id, description }) => {
                 return (
-                  <li className="ml-8 list-disc" key={id}>
+                  <li className="" key={id}>
                     {description}
                   </li>
                 );
@@ -218,9 +224,21 @@ function Content() {
             {!!product.availableSizes.length && (
               <div className="grid w-full gap-1">
                 <label>Size</label>
-                <Select onValueChange={handleSize} value={size}>
+                <Select
+                  onValueChange={handleSize}
+                  value={size}
+                  disabled={product.availableSizes.every(
+                    (s) => s.quantity === 0,
+                  )}
+                >
                   <SelectTrigger>
-                    <SelectValue placeholder="Size" />
+                    <SelectValue
+                      placeholder={
+                        product.availableSizes.every((s) => s.quantity === 0)
+                          ? "Size (Out of Stock)"
+                          : "Size"
+                      }
+                    />
                   </SelectTrigger>
                   <SelectContent>
                     {product.availableSizes
@@ -252,6 +270,7 @@ function Content() {
                 max={getAvailableStock()}
                 value={quantity}
                 onChange={(e) => handleQuantity(Number(e.target.value))}
+                disabled={product.availableSizes.every((s) => s.quantity === 0)}
               />
             </div>
           </div>
@@ -262,8 +281,13 @@ function Content() {
                 product.availableSizes.length > 0 &&
                 (!size || getAvailableStock() === 0)
               }
+              className={twMerge(
+                "h-12 gap-2 py-3",
+                addedToCart && "bg-primary/80",
+              )}
             >
-              Add to Cart*
+              <ShoppingCart />
+              {addedToCart ? "Added!" : "Add to cart*"}
             </Button>
             <DisclaimerText />
           </div>

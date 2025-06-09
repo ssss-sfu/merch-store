@@ -23,10 +23,15 @@ export default function SebCursor() {
   // Initialize random cursor image on first load
   useEffect(() => {
     const sebIcons = [
-      "/seb-default.svg",
-      "/seb-coffee.svg",
-      "/seb-confused.svg",
-      "/seb-think.svg",
+      "/images/seb-coffee.svg",
+      "/images/seb-confused.svg",
+      "/images/seb-cry.svg",
+      "/images/seb-default.svg",
+      "/images/seb-happy.svg",
+      "/images/seb-heart.svg",
+      "/images/seb-laugh.svg",
+      "/images/seb-think.svg",
+      "/images/seb-xd.svg",
     ];
 
     const randomIcon = sebIcons[Math.floor(Math.random() * sebIcons.length)];
