@@ -4,10 +4,9 @@ import { type PrismaClient } from "@prisma/client";
 
 const emailConfig = {
   confirmed: {
-    subject: "SSSS Merch - Order Confirmation 💖",
+    subject: "[ACTION REQUIRED] SSSS Merch - Order Confirmation 💖",
     title: "SSSS Merch - Order Confirmed!",
-    message:
-      "Thank you for your order. Please Join our Discord and contact an executive.",
+    message: `Thank you for your order. Please contact an executive, preferably <strong>@${process.env.NEXT_PUBLIC_DISCORD_TAG}</strong> on Discord!.`,
     showNextSteps: true,
   },
   processed: {
@@ -194,6 +193,42 @@ export async function sendOrderEmail(
                     </tr>
                   </table>
 
+                  <!-- Footer Content -->
+                  ${
+                    config.showNextSteps
+                      ? `
+                  <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-top: 24px; font-size: 14px;">
+                    <tr>
+                      <td>
+                        <p class="section-title">Next Steps:</p>
+                        <p>
+                          IMPORTANT:
+                          These items will be stored at the SSSS office (Room ${process.env.NEXT_PUBLIC_ROOM_NUMBER ?? "UNDEFINED ROOM NUMBER"}) at the Surrey campus and will only be available for pickup at Surrey campus or delivery on select days to Burnaby campus (subject to change). <br/><br/>
+
+                          If you are not already in the SSSS Discord, we encourage you to join! You can receive regular updates on union activities and events, and it will be easier to contact you. Be sure to check out the <strong>#merch-sales</strong> channel for specifics by adding it to your Channels through Discord's Channel list feature! You may also directly DM <strong>@${process.env.NEXT_PUBLIC_DISCORD_TAG}</strong> on Discord!
+                        </p>
+                        <p class="note">
+                          Note: If no attempt has been made to pick up your order within 2 weeks,
+                          your order will be automatically cancelled.
+                        </p>
+                        <p>If you have any questions, please contact us.</p>
+                        <p>Thank you for buying SSSS merch!</p>
+                      </td>
+                    </tr>
+                  </table>
+                  `
+                      : `
+                  <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-top: 24px; font-size: 14px;">
+                    <tr>
+                      <td>
+                        <p>If you have any questions, please contact us.</p>
+                        <p>Thank you for buying SSSS merch!</p>
+                      </td>
+                    </tr>
+                  </table>
+                  `
+                  }
+
                   <!-- Order Details -->
                   <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom: 24px;">
                     <tr>
@@ -269,42 +304,6 @@ export async function sendOrderEmail(
                       </td>
                     </tr>
                   </table>
-
-                  <!-- Footer Content -->
-                  ${
-                    config.showNextSteps
-                      ? `
-                  <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-top: 24px; font-size: 14px;">
-                    <tr>
-                      <td>
-                        <p class="section-title">Next Steps:</p>
-                        <p>
-                          IMPORTANT:
-                          These items will be stored at the SSSS office (Room 4016) at the Surrey campus and will only be available for pickup at Surrey campus or delivery on select days to Burnaby campus (subject to change). <br/><br/>
-
-                          If you are not already in the SSSS Discord, we encourage you to join! You can receive regular updates on union activities and events, and it will be easier to contact you. Be sure to check out the <strong>#merch-sales</strong> channel for specifics by adding it to your Channels through Discord's Channel list feature! You may also directly DM <strong>@${process.env.NEXT_PUBLIC_DISCORD_TAG}</strong> on Discord!
-                        </p>
-                        <p class="note">
-                          Note: If no attempt has been made to pick up your order within 2 weeks,
-                          your order will be automatically cancelled.
-                        </p>
-                        <p>If you have any questions, please contact us.</p>
-                        <p>Thank you for buying SSSS merch!</p>
-                      </td>
-                    </tr>
-                  </table>
-                  `
-                      : `
-                  <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-top: 24px; font-size: 14px;">
-                    <tr>
-                      <td>
-                        <p>If you have any questions, please contact us.</p>
-                        <p>Thank you for buying SSSS merch!</p>
-                      </td>
-                    </tr>
-                  </table>
-                  `
-                  }
 
                   <!-- Social Links Footer -->
                   <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-top: 24px; text-align: center; padding-top: 16px; border-top: 1px solid #e2e8f0; background-color: #0f1419; color: white;">

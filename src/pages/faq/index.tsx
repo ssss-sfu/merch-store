@@ -10,8 +10,11 @@ export default function FAQPage() {
       answer: (
         <>
           These items will be stored at the{" "}
-          <span className="font-medium">SSSS office (Room 4016)</span> at the
-          Surrey campus and will only be available for pickup at{" "}
+          <span className="font-medium">
+            SSSS office (Room{" "}
+            {process.env.NEXT_PUBLIC_ROOM_NUMBER ?? "UNDEFINED ROOM"})
+          </span>{" "}
+          at the Surrey campus and will only be available for pickup at{" "}
           <span className="font-medium">Surrey campus</span> or delivery on
           select days to <span className="font-medium">Burnaby campus</span>{" "}
           (subject to change).

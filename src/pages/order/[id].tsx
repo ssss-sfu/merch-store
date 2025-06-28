@@ -268,6 +268,14 @@ export default function OrderConfirmation() {
                   order details. They will provide you with further instructions
                   on where and when to collect your items.
                 </p>
+                <p className="mt-2">
+                  You can contact us directly on Discord:{" "}
+                  <span className="font-medium">
+                    @
+                    {process.env.NEXT_PUBLIC_DISCORD_TAG ??
+                      "DISCORD TAG IS NOT SET UP"}
+                  </span>
+                </p>
                 <p className="mt-2 font-medium">
                   Note: If no attempt has been made to pick up your order within
                   a week, your order will be cancelled.
