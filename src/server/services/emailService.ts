@@ -313,7 +313,7 @@ export async function sendOrderEmail(
                         
                         <p><a href="https://www.sfussss.org/" style="color: #a78bfa; text-decoration: underline; margin-bottom: 10px;">https://www.sfussss.org/</a></p>
                         
-                        <p style="margin: 8px 0; font-size: 14px;">12450 102 Ave Unit 250, SRYE 4016, Galleria 4 Surrey, BC V3T 0A3</p>
+                        <p style="margin: 8px 0; font-size: 14px;">10285 University Drive SRYE 3006.3, Level 3000 Surrey, BC V3T 0N1</p>
                         
                         <p style="margin: 8px 0; font-size: 14px;">Get in Touch: <a href="mailto:ssss-exec@sfu.ca" style="color: white;">ssss-exec@sfu.ca</a></p>
                         
