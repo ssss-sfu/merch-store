@@ -50,15 +50,3 @@ jobs:
 
       - name: Build Nextjs App
         run: SKIP_ENV_VALIDATION=true npm run build
-
-  deploy:
-    name: Deploy to Vercel
-    needs: [format_and_lint, build]
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    runs-on: ubuntu-latest
-    steps:
-      - name: Log commit
-        run: echo "Triggering Vercel deploy for commit ${{ github.sha }}"
-
-      - name: Deploy to Vercel (Production)
-        run: curl -fsS -X POST "${{ secrets.VERCEL_DEPLOY_HOOK_PROD }}?buildCache=false"
